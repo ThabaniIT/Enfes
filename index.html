@@ -1,0 +1,3734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eswatini National Fire and Emergency Services (ENFES)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style id="app-style">
+    :root {
+      --enfes-red: #e63946;
+      --enfes-dark-red: #c1121f;
+      --enfes-navy: #1d3557;
+      --enfes-dark-navy: #0d1b2a;
+      --enfes-gold: #fca311;
+      --enfes-light-gold: #ffca3a;
+      --enfes-white: #f8f9fa;
+      --enfes-light-grey: #e9ecef;
+      --navbar-h: 76px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--enfes-navy);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    h1, h2, h3, h4, h5, h6,
+    .navbar-brand span, .btn, .section-title {
+      font-family: 'Poppins', 'Segoe UI', sans-serif;
+    }
+
+    section[id] {
+      scroll-margin-top: var(--navbar-h);
+    }
+
+    ::selection {
+      background: var(--enfes-red);
+      color: #fff;
+    }
+
+    /* Preloader */
+    #preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      background: var(--enfes-dark-navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    #preloader.loaded {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .preloader-flame {
+      position: relative;
+      width: 70px;
+      height: 70px;
+    }
+
+    .preloader-flame i {
+      font-size: 3rem;
+      color: var(--enfes-red);
+      animation: flame-flicker 1.1s ease-in-out infinite;
+      filter: drop-shadow(0 0 12px rgba(230, 57, 70, 0.6));
+    }
+
+    .preloader-ring {
+      position: absolute;
+      inset: -14px;
+      border: 3px solid rgba(252, 163, 17, 0.25);
+      border-top-color: var(--enfes-gold);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes flame-flicker {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      50% { transform: scale(1.12) rotate(-3deg); opacity: 0.85; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    body.no-scroll {
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* Reveal-on-load fade for hero content handled by AOS already */
+
+    /* Ripple */
+    .btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple-anim 0.6s linear;
+      background: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+    }
+
+    @keyframes ripple-anim {
+      to { transform: scale(3); opacity: 0; }
+    }
+
+    /* Toast container */
+    .enfes-toast-wrap {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      z-index: 10500;
+    }
+
+    /* Form feedback animations */
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-4px); }
+      40%, 60% { transform: translateX(4px); }
+    }
+
+    .shake-invalid {
+      animation: shake 0.5s ease;
+    }
+
+    .success-check {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto;
+      border-radius: 50%;
+      background: #2a9d5c;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .form-success-anim {
+      animation: fade-up-in 0.4s ease;
+    }
+
+    @keyframes fade-up-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-primary {
+      background-color: var(--enfes-red);
+      border-color: var(--enfes-red);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--enfes-dark-red);
+      border-color: var(--enfes-dark-red);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary {
+      background-color: var(--enfes-navy);
+      border-color: var(--enfes-navy);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--enfes-dark-navy);
+      border-color: var(--enfes-dark-navy);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-outline-primary {
+      border-color: var(--enfes-red);
+      color: var(--enfes-red);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: var(--enfes-red);
+      border-color: var(--enfes-red);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-gold {
+      background-color: var(--enfes-gold);
+      border-color: var(--enfes-gold);
+      color: var(--enfes-navy);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gold:hover {
+      background-color: var(--enfes-light-gold);
+      border-color: var(--enfes-light-gold);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand img {
+      height: 50px;
+    }
+
+    .nav-link {
+      color: var(--enfes-navy);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+      padding: 0.5rem 1rem;
+    }
+
+    .nav-link:hover {
+      color: var(--enfes-red);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: var(--enfes-red);
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+
+    .nav-link:hover::after {
+      width: 80%;
+    }
+
+    .navbar .nav-item.active .nav-link {
+      color: var(--enfes-red);
+      font-weight: 600;
+    }
+
+    .navbar .nav-item.active .nav-link::after {
+      width: 80%;
+    }
+
+    .accent-bar {
+      height: 5px;
+      background-color: var(--enfes-red);
+      width: 100%;
+      background-image: linear-gradient(90deg, var(--enfes-red), var(--enfes-gold), var(--enfes-red));
+      background-size: 200% 100%;
+      animation: accent-slide 6s linear infinite;
+    }
+
+    @keyframes accent-slide {
+      0% { background-position: 0% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .navbar {
+      transition: all 0.35s ease;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .navbar.scrolled {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .navbar.scrolled .navbar-brand img {
+      height: 40px;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      position: relative;
+      height: 80vh;
+      min-height: 500px;
+      overflow: hidden;
+      color: white;
+      display: flex;
+      align-items: center;
+      text-align: center;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(13, 27, 42, 0.55), rgba(13, 27, 42, 0.75)), url('postQueueImg_26-634c1bd18a5d6.jpg');
+      background-size: cover;
+      background-position: center;
+      animation: hero-kenburns 18s ease-in-out infinite alternate;
+    }
+
+    @keyframes hero-kenburns {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.12) translate(-1%, -1%); }
+    }
+
+    .hero-embers {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .ember {
+      position: absolute;
+      bottom: -20px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--enfes-gold), var(--enfes-red));
+      opacity: 0;
+      animation-name: ember-rise;
+      animation-timing-function: ease-in;
+      animation-iteration-count: infinite;
+      box-shadow: 0 0 6px 1px rgba(252, 163, 17, 0.7);
+    }
+
+    @keyframes ember-rise {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      10% { opacity: 0.9; }
+      100% { transform: translateY(-90vh) translateX(20px); opacity: 0; }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-bg, .ember, .accent-bar, .preloader-flame i, .preloader-ring {
+        animation: none !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    .hero-content h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-content p.lead {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Emergency Contact Sidebar */
+    .emergency-sidebar {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--enfes-red);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 8px 0 0 8px;
+      box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .emergency-sidebar:hover {
+      transform: translateY(-50%) translateX(-5px);
+    }
+
+    .emergency-sidebar h4 {
+      font-weight: 700;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      padding-bottom: 0.5rem;
+    }
+
+    .emergency-sidebar .contact-item {
+      margin-bottom: 0.75rem;
+      font-size: 1.1rem;
+    }
+
+    .emergency-sidebar .contact-item i {
+      margin-right: 0.5rem;
+      color: var(--enfes-gold);
+    }
+
+    /* Impact / Stats Counter Section */
+    .stats-section {
+      background: linear-gradient(120deg, var(--enfes-dark-navy), var(--enfes-navy));
+      padding: 4rem 0 3rem;
+      color: white;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .stat-item i {
+      font-size: 1.75rem;
+      color: var(--enfes-gold);
+      margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+
+    .stat-number {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.75rem;
+      font-weight: 800;
+      color: white;
+      line-height: 1;
+    }
+
+    .stat-label {
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.3px;
+    }
+
+    /* Emergency Action Buttons */
+    .emergency-actions {
+      margin-top: -60px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .emergency-card {
+      background-color: white;
+      border-radius: 10px;
+      border-top: 5px solid var(--enfes-gold);
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      height: 100%;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .emergency-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .emergency-card i {
+      font-size: 2.5rem;
+      color: var(--enfes-red);
+      margin-bottom: 1rem;
+    }
+
+    .emergency-card h3 {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--enfes-navy);
+    }
+
+    .emergency-card p {
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Alerts Section */
+    .alerts-section {
+      background-color: var(--enfes-light-grey);
+      padding: 3rem 0;
+    }
+
+    .alert-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .alert-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .alert-icon {
+      font-size: 2rem;
+      margin-right: 1rem;
+    }
+
+    .alert-icon.warning {
+      color: #ffc107;
+    }
+
+    .alert-icon.info {
+      color: #0dcaf0;
+    }
+
+    .alert-icon.danger {
+      color: var(--enfes-red);
+    }
+
+    .alert-content h5 {
+      margin-bottom: 0.5rem;
+      color: var(--enfes-navy);
+    }
+
+    /* About Section */
+    .about-section {
+      padding: 5rem 0;
+    }
+
+    .section-title {
+      position: relative;
+      padding-bottom: 1rem;
+      margin-bottom: 3rem;
+      text-align: center;
+      color: var(--enfes-navy);
+      font-weight: 700;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: var(--enfes-red);
+    }
+
+    .cta-buttons {
+      text-align: center;
+      margin-top: 2.5rem;
+    }
+
+    .cta-buttons .btn {
+      margin: 0 0.5rem 1rem;
+      padding: 0.75rem 1.5rem;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 0;
+    }
+
+    .timeline::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      background-color: var(--enfes-navy);
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      margin-left: -3px;
+    }
+
+    .timeline-item {
+      padding: 10px 40px;
+      position: relative;
+      background-color: inherit;
+      width: 50%;
+    }
+
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      right: -12px;
+      background-color: var(--enfes-red);
+      border: 4px solid var(--enfes-gold);
+      top: 15px;
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .left {
+      left: 0;
+    }
+
+    .right {
+      left: 50%;
+    }
+
+    .left::before {
+      content: " ";
+      height: 0;
+      position: absolute;
+      top: 22px;
+      width: 0;
+      z-index: 1;
+      right: 30px;
+      border: medium solid var(--enfes-light-grey);
+      border-width: 10px 0 10px 10px;
+      border-color: transparent transparent transparent var(--enfes-light-grey);
+    }
+
+    .right::before {
+      content: " ";
+      height: 0;
+      position: absolute;
+      top: 22px;
+      width: 0;
+      z-index: 1;
+      left: 30px;
+      border: medium solid var(--enfes-light-grey);
+      border-width: 10px 10px 10px 0;
+      border-color: transparent var(--enfes-light-grey) transparent transparent;
+    }
+
+    .right::after {
+      left: -13px;
+    }
+
+    .timeline-content {
+      padding: 20px 30px;
+      background-color: white;
+      position: relative;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-date {
+      font-weight: bold;
+      color: var(--enfes-red);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Mission & Values */
+    .mission-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
+      height: 100%;
+      transition: all 0.3s ease;
+      border-left: 4px solid var(--enfes-navy);
+    }
+
+    .mission-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .mission-card h4 {
+      color: var(--enfes-navy);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .mission-card i {
+      font-size: 2rem;
+      color: var(--enfes-gold);
+      margin-bottom: 1rem;
+    }
+
+    /* Leadership Profiles */
+    .team-section {
+      padding: 4rem 0;
+    }
+
+    .team-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .team-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .team-img {
+      height: 250px;
+      background-color: var(--enfes-light-grey);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .team-info {
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .team-info h5 {
+      margin-bottom: 0.5rem;
+      color: var(--enfes-navy);
+      font-weight: 600;
+    }
+
+    .team-info .position {
+      color: var(--enfes-red);
+      font-weight: 500;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    /* Services Section */
+    .services-section {
+      padding: 5rem 0;
+      background-color: var(--enfes-light-grey);
+    }
+
+    .service-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      height: 100%;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .service-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .service-img {
+      height: 180px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .service-info {
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .service-info h4 {
+      margin-bottom: 0.75rem;
+      color: var(--enfes-navy);
+      font-weight: 600;
+    }
+
+    .service-icon {
+      font-size: 3rem;
+      color: var(--enfes-red);
+      margin-bottom: 1rem;
+    }
+
+    /* Service Modal */
+    .modal-content {
+      border-radius: 10px;
+      overflow: hidden;
+      border: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      background-color: var(--enfes-navy);
+      color: white;
+      border-bottom: none;
+      padding: 1.5rem;
+    }
+
+    .modal-body {
+      padding: 2rem;
+    }
+
+    .modal-section {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--enfes-light-grey);
+    }
+
+    .modal-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .modal-section h5 {
+      color: var(--enfes-red);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    /* Fire Safety Section */
+    .safety-section {
+      padding: 5rem 0;
+    }
+
+    .accordion-button:not(.collapsed) {
+      background-color: rgba(230, 57, 70, 0.1);
+      color: var(--enfes-red);
+      box-shadow: none;
+    }
+
+    .accordion-button:focus {
+      box-shadow: none;
+      border-color: rgba(230, 57, 70, 0.25);
+    }
+
+    .safety-content {
+      padding: 1.5rem;
+    }
+
+    .safety-steps {
+      counter-reset: step;
+      padding-left: 0;
+      list-style-type: none;
+    }
+
+    .safety-steps li {
+      position: relative;
+      padding-left: 3rem;
+      margin-bottom: 1rem;
+      counter-increment: step;
+    }
+
+    .safety-steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2rem;
+      height: 2rem;
+      background-color: var(--enfes-gold);
+      color: var(--enfes-navy);
+      border-radius: 50%;
+      text-align: center;
+      line-height: 2rem;
+      font-weight: bold;
+    }
+
+    /* Stations Map */
+    .stations-section {
+      padding: 5rem 0;
+      background-color: var(--enfes-light-grey);
+    }
+
+    #stations-map {
+      height: 500px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      z-index: 1;
+    }
+
+    .station-filter {
+      background-color: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
+
+    .station-info-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border-left: 4px solid var(--enfes-red);
+    }
+
+    .station-info-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .station-info-card h5 {
+      color: var(--enfes-navy);
+      margin-bottom: 0.75rem;
+    }
+
+    .station-info-card .badge {
+      background-color: var(--enfes-gold);
+      color: var(--enfes-navy);
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+
+    .station-info-card .station-detail {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .station-info-card .station-detail i {
+      color: var(--enfes-red);
+      margin-right: 0.5rem;
+      width: 1rem;
+      text-align: center;
+    }
+
+    /* News Section */
+    .news-section {
+      padding: 5rem 0;
+    }
+
+    .news-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .news-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .news-img {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .news-info {
+      padding: 1.5rem;
+    }
+
+    .news-info .date {
+      color: var(--enfes-red);
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .news-info h5 {
+      margin-bottom: 0.75rem;
+      color: var(--enfes-navy);
+      font-weight: 600;
+    }
+
+    .news-info .category {
+      display: inline-block;
+      background-color: var(--enfes-navy);
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      margin-bottom: 1rem;
+    }
+
+    .news-skeleton {
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.6;
+      }
+    }
+
+    /* Careers Section */
+    .careers-section {
+      padding: 5rem 0;
+      background-color: var(--enfes-light-grey);
+    }
+
+    .vacancy-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .vacancy-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .vacancy-card h5 {
+      color: var(--enfes-navy);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .vacancy-card .location {
+      color: var(--enfes-red);
+      font-weight: 500;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .vacancy-card .deadline {
+      background-color: var(--enfes-gold);
+      color: var(--enfes-navy);
+      font-weight: 500;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      display: inline-block;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .application-form {
+      background-color: white;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-label {
+      color: var(--enfes-navy);
+      font-weight: 500;
+    }
+
+    .form-control:focus {
+      border-color: var(--enfes-red);
+      box-shadow: 0 0 0 0.25rem rgba(230, 57, 70, 0.25);
+    }
+
+    .form-file-upload {
+      position: relative;
+      width: 100%;
+      height: 100px;
+      border: 2px dashed var(--enfes-light-grey);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f8f9fa;
+      transition: all 0.3s ease;
+    }
+
+    .form-file-upload:hover {
+      background-color: #f1f3f5;
+      border-color: var(--enfes-red);
+    }
+
+    .form-file-upload input {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      color: var(--enfes-red);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Community Section */
+    .community-section {
+      padding: 5rem 0;
+    }
+
+    .testimonial-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .testimonial-card .quote-icon {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      font-size: 3rem;
+      color: rgba(230, 57, 70, 0.1);
+    }
+
+    .testimonial-card .quote {
+      font-style: italic;
+      margin-bottom: 1.5rem;
+      color: #495057;
+    }
+
+    .testimonial-card .author {
+      font-weight: 600;
+      color: var(--enfes-navy);
+      margin-bottom: 0.25rem;
+    }
+
+    .testimonial-card .author-title {
+      color: var(--enfes-red);
+      font-size: 0.9rem;
+    }
+
+    .community-action {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .community-action:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .community-img {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .community-info {
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .community-info h4 {
+      margin-bottom: 1rem;
+      color: var(--enfes-navy);
+      font-weight: 600;
+    }
+
+    /* Resources Section */
+    .resources-section {
+      padding: 5rem 0;
+      background-color: var(--enfes-light-grey);
+    }
+
+    .resource-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .resource-thumbnail {
+      height: 160px;
+      background-color: var(--enfes-navy);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    .resource-info {
+      padding: 1.5rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .resource-info h5 {
+      margin-bottom: 0.75rem;
+      color: var(--enfes-navy);
+      font-weight: 600;
+    }
+
+    .resource-meta {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--enfes-light-grey);
+      margin-top: 1rem;
+    }
+
+    .resource-meta .type {
+      background-color: var(--enfes-navy);
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+    }
+
+    .resource-meta .downloads {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .resource-meta .downloads i {
+      color: var(--enfes-gold);
+      margin-right: 0.25rem;
+    }
+
+    /* Contact Section */
+    .contact-section {
+      padding: 5rem 0;
+    }
+
+    .contact-form {
+      background-color: white;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .contact-info {
+      background-color: var(--enfes-navy);
+      border-radius: 10px;
+      padding: 2rem;
+      color: white;
+      height: 100%;
+    }
+
+    .contact-info h4 {
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      color: white;
+      border-bottom: 2px solid var(--enfes-gold);
+      padding-bottom: 0.5rem;
+    }
+
+    .contact-info .contact-item {
+      margin-bottom: 1.5rem;
+      display: flex;
+    }
+
+    .contact-info .contact-icon {
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      color: var(--enfes-gold);
+    }
+
+    .contact-info .contact-text {
+      flex: 1;
+    }
+
+    .contact-info .contact-text h6 {
+      margin-bottom: 0.25rem;
+      color: var(--enfes-gold);
+      font-weight: 600;
+    }
+
+    #contact-map {
+  height: 300px;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 1.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+    /* Footer */
+    .footer {
+      background-color: var(--enfes-navy);
+      color: white;
+      padding: 5rem 0 0;
+    }
+
+    .footer-logo {
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-logo img {
+      height: 60px;
+    }
+
+    .footer h5 {
+      color: white;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      position: relative;
+      padding-bottom: 0.75rem;
+    }
+
+    .footer h5::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50px;
+      height: 2px;
+      background: var(--enfes-red);
+    }
+
+    .footer-links {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 2rem;
+    }
+
+    .footer-links li {
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: block;
+    }
+
+    .footer-links a:hover {
+      color: var(--enfes-gold);
+      transform: translateX(5px);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .social-links a {
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+      background-color: var(--enfes-red);
+      transform: translateY(-5px);
+    }
+
+    .subscription-form {
+      margin-bottom: 2rem;
+    }
+
+    .subscription-form .form-control {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+    }
+
+    .subscription-form .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .subscription-form .form-control:focus {
+      box-shadow: 0 0 0 0.25rem rgba(252, 163, 17, 0.25);
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .government-badge {
+      background-color: white;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .government-badge img {
+      height: 60px;
+    }
+
+    .copyright {
+      background-color: var(--enfes-dark-navy);
+      padding: 1.5rem 0;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Scroll to top button */
+    .scroll-to-top {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--enfes-red);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 99;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .scroll-to-top.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .scroll-to-top:hover {
+      background-color: var(--enfes-dark-red);
+      transform: translateY(-3px);
+    }
+
+    /* Media Queries */
+    @media (max-width: 991.98px) {
+      .emergency-sidebar {
+        display: none;
+      }
+
+      .timeline::after {
+        left: 31px;
+      }
+
+      .timeline-item {
+        width: 100%;
+        padding-left: 70px;
+        padding-right: 25px;
+      }
+
+      .timeline-item::before {
+        left: 60px;
+        border-width: 10px 10px 10px 0;
+        border-color: transparent var(--enfes-light-grey) transparent transparent;
+      }
+
+      .left::after, .right::after {
+        left: 18px;
+      }
+
+      .right {
+        left: 0%;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .hero-content h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero-content p.lead {
+        font-size: 1.1rem;
+      }
+
+      .hero-section {
+        height: auto;
+        min-height: 400px;
+      }
+    }
+
+    /* ================================
+   MOBILE MENU FIX
+   ================================ */
+@media (max-width: 991.98px) {
+
+  /* Center the mobile navigation menu */
+  #navbarNav {
+    text-align: center;
+  }
+
+  #navbarNav .navbar-nav {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    align-items: center;
+  }
+
+  #navbarNav .nav-item {
+    width: 100%;
+    text-align: center;
+  }
+
+  #navbarNav .nav-link {
+    display: inline-block;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Keep the hover/active underline centered */
+  #navbarNav .nav-link::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Remove lines/underlines from social media icons */
+.social-links a,
+.social-links a:hover,
+.social-links a:focus,
+.social-links a:active {
+    text-decoration: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none;
+}
+
+/* Keep the icons clean and perfectly centered */
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+}
+
+/* Remove any line from the Font Awesome icon itself */
+.social-links a i {
+    text-decoration: none !important;
+}
+  </style>
+</head>
+<body>
+  <!-- Preloader -->
+  <div id="preloader" aria-hidden="true">
+    <div class="preloader-flame">
+      <div class="preloader-ring"></div>
+      <i class="fas fa-fire"></i>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="enfes-toast-wrap" id="enfesToastWrap"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="#hero">
+        <img src="1764334617672.jpg" alt="ENFES Logo">
+        <span class="fw-bold ms-2 text-danger">ENFES</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#hero">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#about">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#services">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#safety">Safety</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#stations">Stations</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#news">News</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#careers">Careers</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#contact">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="accent-bar"></div>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-embers" id="heroEmbers"></div>
+    <div class="container hero-content">
+      <div class="row">
+        <div class="col-md-10 mx-auto text-center">
+          <h1 data-aos="fade-up">Saving Lives. Protecting Communities.</h1>
+          <p class="lead" data-aos="fade-up" data-aos-delay="100">Eswatini National Fire and Emergency Services</p>
+          <div data-aos="fade-up" data-aos-delay="200">
+            <a href="#contact" class="btn btn-lg btn-primary me-2 mb-2">Emergency Contact</a>
+            <a href="#services" class="btn btn-lg btn-outline-light mb-2">Our Services</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Emergency Sidebar -->
+  <div class="emergency-sidebar d-none d-lg-block">
+    <h4><i class="fas fa-phone-alt"></i> Emergency</h4>
+    <div class="contact-item">
+      <i class="fas fa-fire-extinguisher"></i> 997
+    </div>
+    <div class="contact-item">
+      <i class="fas fa-ambulance"></i> 977
+    </div>
+    <div class="contact-item">
+      <i class="fas fa-phone"></i> +268 2404 3333
+    </div>
+  </div>
+
+  <!-- Emergency Action Buttons -->
+  <section class="emergency-actions">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-4" data-aos="fade-up">
+          <div class="emergency-card text-center">
+            <i class="fas fa-fire"></i>
+            <h3>Report a Fire</h3>
+            <p>Call immediately if you see a fire or smell smoke in a building.</p>
+            <a href="tel:997" class="btn btn-primary w-100">Call 997</a>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="emergency-card text-center">
+            <i class="fas fa-ambulance"></i>
+            <h3>Ambulance Assistance</h3>
+            <p>Medical emergencies requiring immediate attention and transport.</p>
+            <a href="tel:977" class="btn btn-primary w-100">Call 977</a>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="emergency-card text-center">
+            <i class="fas fa-life-ring"></i>
+            <h3>Rescue Services</h3>
+            <p>For trapped persons, water rescues, and other emergency situations.</p>
+            <a href="tel:+26824043333" class="btn btn-primary w-100">Call +268 2404 3333</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact / Stats -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-6 col-md-3" data-aos="fade-up">
+          <div class="stat-item">
+            <i class="fas fa-fire-extinguisher"></i>
+            <div class="stat-number" data-count="4820">0</div>
+            <div class="stat-label">Emergency Calls Answered / Year</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+          <div class="stat-item">
+            <i class="fas fa-truck"></i>
+            <div class="stat-number" data-count="18">0</div>
+            <div class="stat-label">Stations Nationwide</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+          <div class="stat-item">
+            <i class="fas fa-user-shield"></i>
+            <div class="stat-number" data-count="312">0</div>
+            <div class="stat-label">Trained Personnel</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+          <div class="stat-item">
+            <i class="fas fa-stopwatch"></i>
+            <div class="stat-number" data-count="7" data-suffix=" min">0</div>
+            <div class="stat-label">Average Response Time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alerts Section -->
+  <section class="alerts-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Latest Alerts</h2>
+      <div class="row">
+        <div class="col-md-4 mb-3" data-aos="fade-up">
+          <div class="alert-card">
+            <div class="alert-icon warning">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="alert-content">
+              <h5>High Fire Danger</h5>
+              <p>Elevated risk in eastern regions due to dry conditions.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="100">
+          <div class="alert-card">
+            <div class="alert-icon info">
+              <i class="fas fa-cloud-rain"></i>
+            </div>
+            <div class="alert-content">
+              <h5>Heavy Rainfall Expected</h5>
+              <p>Potential flooding in low-lying areas this weekend.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="200">
+          <div class="alert-card">
+            <div class="alert-icon danger">
+              <i class="fas fa-burn"></i>
+            </div>
+            <div class="alert-content">
+              <h5>Burn Ban in Effect</h5>
+              <p>No outdoor burning allowed until further notice.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="about-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">About ENFES</h2>
+      <div class="row mb-5">
+        <div class="col-md-6" data-aos="fade-right">
+          <h3 class="mb-4">Eswatini National Fire and Emergency Services</h3>
+          <p class="lead mb-4">Dedicated to protecting lives, property, and the environment through professional emergency response and prevention services.</p>
+          <p>ENFES is Eswatini's premier emergency response organization, operating under the Ministry of Public Works and Transport. With strategically located stations across the country, our highly trained teams are ready to respond 24/7 to fires, medical emergencies, hazardous materials incidents, and other disasters.</p>
+          <p>Beyond emergency response, we are committed to public education, fire prevention, and community preparedness to build a safer Eswatini for all citizens.</p>
+        </div>
+        <div class="col-md-6" data-aos="fade-left">
+          <div class="rounded overflow-hidden">
+            <img src="1764335849728.jpg" alt="ENFES Firefighters" class="img-fluid rounded">
+          </div>
+        </div>
+      </div>
+      
+      <h3 class="text-center mb-4" data-aos="fade-up">Our History</h3>
+      <div class="timeline" data-aos="fade-up">
+        <div class="timeline-item left">
+          <div class="timeline-content">
+            <span class="timeline-date">1975</span>
+            <h4>Foundation</h4>
+            <p>Establishment of the first coordinated fire service in Mbabane.</p>
+          </div>
+        </div>
+        <div class="timeline-item right">
+          <div class="timeline-content">
+            <span class="timeline-date">1992</span>
+            <h4>National Expansion</h4>
+            <p>Extension of services to major towns and industrial areas.</p>
+          </div>
+        </div>
+        <div class="timeline-item left">
+          <div class="timeline-content">
+            <span class="timeline-date">2003</span>
+            <h4>Modernization</h4>
+            <p>Implementation of modern equipment and training protocols.</p>
+          </div>
+        </div>
+        <div class="timeline-item right">
+          <div class="timeline-content">
+            <span class="timeline-date">2015</span>
+            <h4>ENFES Formation</h4>
+            <p>Restructuring into Eswatini National Fire and Emergency Services.</p>
+          </div>
+        </div>
+      </div>
+      
+      <h3 class="text-center mb-4 mt-5" data-aos="fade-up">Mission & Values</h3>
+      <div class="row" data-aos="fade-up">
+        <div class="col-md-4 mb-4">
+          <div class="mission-card">
+            <i class="fas fa-bullseye"></i>
+            <h4>Our Mission</h4>
+            <p>To protect life, property, and the environment through prevention, education, and emergency response.</p>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="mission-card">
+            <i class="fas fa-eye"></i>
+            <h4>Our Vision</h4>
+            <p>To be recognized as a world-class emergency service, setting the standard for excellence in Eswatini.</p>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="mission-card">
+            <i class="fas fa-medal"></i>
+            <h4>Our Values</h4>
+            <ul>
+              <li>Service Excellence</li>
+              <li>Integrity & Professionalism</li>
+              <li>Courage & Dedication</li>
+              <li>Community Focus</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <h3 class="text-center mb-4 mt-5" data-aos="fade-up">Leadership</h3>
+      <div class="row" data-aos="fade-up">
+        <div class="col-md-3 col-sm-6">
+          <div class="team-card">
+            <div class="team-img" style="background-image: url('https://cdn.pixabay.com/photo/2017/08/01/01/33/beanie-2562646_1280.jpg');"></div>
+            <div class="team-info">
+              <h5>John Maziya</h5>
+              <span class="position">Chief Fire Officer</span>
+              <p>Over 25 years of emergency service experience.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <div class="team-card">
+            <div class="team-img" style="background-image: url('https://cdn.pixabay.com/photo/2019/02/11/20/20/woman-3990680_1280.jpg');"></div>
+            <div class="team-info">
+              <h5>Sarah Dlamini</h5>
+              <span class="position">Deputy Chief - Operations</span>
+              <p>Expert in tactical response and incident command.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <div class="team-card">
+            <div class="team-img" style="background-image: url('https://cdn.pixabay.com/photo/2017/11/02/14/26/model-2911330_1280.jpg');"></div>
+            <div class="team-info">
+              <h5>Michael Nkambule</h5>
+              <span class="position">Deputy Chief - Prevention</span>
+              <p>Specialized in fire prevention and public education.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <div class="team-card">
+            <div class="team-img" style="background-image: url('https://cdn.pixabay.com/photo/2019/02/11/20/20/woman-3990679_1280.jpg');"></div>
+            <div class="team-info">
+              <h5>Thembi Zwane</h5>
+              <span class="position">Chief of Training</span>
+              <p>Leads professional development and certification.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="cta-buttons mt-5" data-aos="fade-up">
+        <a href="#community" class="btn btn-primary">Volunteer With Us</a>
+        <a href="#careers" class="btn btn-secondary">Join Our Team</a>
+        <a href="javascript:void(0)" class="btn btn-gold" data-action="modal" data-title="Support ENFES" data-body="&lt;p&gt;Donations help fund equipment, training and community fire-safety programs across Eswatini.&lt;/p&gt;&lt;p&gt;To make a donation, please contact our administration office directly so we can issue an official receipt:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Phone: +268 2404 3333&lt;/li&gt;&lt;li&gt;Email: admin@enfes.gov.sz&lt;/li&gt;&lt;/ul&gt;">Make a Donation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" class="services-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Our Services</h2>
+      <div class="row">
+        <div class="col-md-3 col-sm-6" data-aos="fade-up">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal1">
+            <div class="service-info">
+              <i class="fas fa-fire-extinguisher service-icon"></i>
+              <h4>Fire Suppression</h4>
+              <p>Response and extinguishment of all types of fires.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal2">
+            <div class="service-info">
+              <i class="fas fa-ambulance service-icon"></i>
+              <h4>Emergency Medical Rescue</h4>
+              <p>Immediate medical assistance and transport.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal3">
+            <div class="service-info">
+              <i class="fas fa-biohazard service-icon"></i>
+              <h4>HAZMAT Response</h4>
+              <p>Handling of hazardous materials incidents.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal4">
+            <div class="service-info">
+              <i class="fas fa-car-crash service-icon"></i>
+              <h4>Road Accident Rescue</h4>
+              <p>Extraction and emergency care at accident scenes.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal5">
+            <div class="service-info">
+              <i class="fas fa-chalkboard-teacher service-icon"></i>
+              <h4>Safety Education</h4>
+              <p>Public awareness and prevention training.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal6">
+            <div class="service-info">
+              <i class="fas fa-clipboard-check service-icon"></i>
+              <h4>Fire Inspections</h4>
+              <p>Building safety and compliance assessments.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal7">
+            <div class="service-info">
+              <i class="fas fa-sitemap service-icon"></i>
+              <h4>Disaster Coordination</h4>
+              <p>Multi-agency emergency response management.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="service-card" data-bs-toggle="modal" data-bs-target="#serviceModal8">
+            <div class="service-info">
+              <i class="fas fa-mountain service-icon"></i>
+              <h4>Special Operations</h4>
+              <p>High-angle, confined space, and water rescue.</p>
+              <button class="btn btn-sm btn-outline-primary">Learn More</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service Modals -->
+  <div class="modal fade" id="serviceModal1" tabindex="-1" aria-labelledby="serviceModalLabel1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="serviceModalLabel1">Fire Suppression Services</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-section">
+            <h5>Overview</h5>
+            <p>Our fire suppression teams are trained to respond to all types of fires, from small residential incidents to large industrial conflagrations. We utilize modern equipment and tactics to extinguish fires quickly while minimizing damage and environmental impact.</p>
+          </div>
+          <div class="modal-section">
+            <h5>When to Contact</h5>
+            <ul>
+              <li>Any visible fire or flames</li>
+              <li>Smoke inside a building</li>
+              <li>Smoke alarms activating</li>
+              <li>Strong burning smell with no visible source</li>
+              <li>Suspected gas leaks or chemical fires</li>
+            </ul>
+          </div>
+          <div class="modal-section">
+            <h5>Our Response</h5>
+            <ol>
+              <li>Emergency call received and dispatched</li>
+              <li>First responders arrive within target time frames</li>
+              <li>Scene assessment and tactical planning</li>
+              <li>Fire suppression operations</li>
+              <li>Search and rescue if needed</li>
+              <li>Overhaul and mop-up operations</li>
+              <li>Scene investigation and documentation</li>
+            </ol>
+          </div>
+          <div class="modal-section">
+            <h5>Equipment and Expertise</h5>
+            <p>ENFES maintains modern pumpers, ladder trucks, and specialized equipment. Our firefighters are trained in structural, vehicle, wildland, and industrial firefighting techniques, with specialized teams for high-risk scenarios.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a href="#contact" class="btn btn-primary" data-bs-dismiss="modal">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other modals with similar structure would follow for each service -->
+
+  <!-- Fire Safety Information -->
+  <section id="safety" class="safety-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Fire Safety Information</h2>
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="accordion" id="safetyAccordion" data-aos="fade-up">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Home Fire Prevention Tips
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#safetyAccordion">
+                <div class="accordion-body safety-content">
+                  <p>Protect your family and property by following these essential home fire prevention measures:</p>
+                  <ul>
+                    <li>Install smoke alarms on every level of your home</li>
+                    <li>Test smoke alarms monthly and replace batteries annually</li>
+                    <li>Keep portable heaters at least 1 meter from anything that can burn</li>
+                    <li>Never leave cooking unattended</li>
+                    <li>Keep matches and lighters away from children</li>
+                    <li>Have your electrical systems inspected by qualified professionals</li>
+                    <li>Develop and practice a home escape plan with all family members</li>
+                  </ul>
+                  <div class="text-center mt-3">
+                    <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="download" data-filename="ENFES-Home-Safety-Checklist.txt" data-content="ENFES HOME FIRE SAFETY CHECKLIST%0A%0A- Install smoke alarms on every level of your home%0A- Test smoke alarms monthly and replace batteries annually%0A- Keep portable heaters at least 1 meter from anything that can burn%0A- Never leave cooking unattended%0A- Keep matches and lighters away from children%0A- Have your electrical systems inspected by qualified professionals%0A- Develop and practice a home escape plan with all family members%0A%0AEswatini National Fire and Emergency Services (ENFES)">Download Home Safety Checklist</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  How to Use a Fire Extinguisher
+                </button>
+              </h2>
+              <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#safetyAccordion">
+                <div class="accordion-body safety-content">
+                  <p>Remember the acronym <strong>PASS</strong> when using a fire extinguisher:</p>
+                  <ul class="safety-steps">
+                    <li><strong>P</strong>ull the pin while holding the extinguisher away from you.</li>
+                    <li><strong>A</strong>im low at the base of the fire.</li>
+                    <li><strong>S</strong>queeze the handle slowly and evenly.</li>
+                    <li><strong>S</strong>weep the nozzle from side to side at the base of the fire.</li>
+                  </ul>
+                  <div class="text-center mt-4">
+                    <img src="https://cdn.pixabay.com/photo/2020/08/09/16/20/fire-5476261_1280.jpg" alt="Fire Extinguisher Demonstration" class="img-fluid rounded">
+                  </div>
+                  <div class="mt-3">
+                    <p><strong>Remember:</strong> Only use fire extinguishers on small, contained fires. If the fire grows or you feel unsafe, evacuate immediately and call emergency services.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Creating an Escape Plan
+                </button>
+              </h2>
+              <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#safetyAccordion">
+                <div class="accordion-body safety-content">
+                  <p>Having a well-practiced escape plan can be the difference between life and death during a fire emergency:</p>
+                  <ol>
+                    <li>Draw a floor plan of your home showing all possible exits from each room</li>
+                    <li>Mark two ways out of each room if possible</li>
+                    <li>Designate a meeting spot outside the home where everyone should gather</li>
+                    <li>Ensure everyone knows how to call emergency services</li>
+                    <li>Practice your escape plan at least twice a year, both day and night</li>
+                  </ol>
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="card">
+                        <div class="card-header bg-danger text-white">
+                          Remember
+                        </div>
+                        <div class="card-body">
+                          <ul>
+                            <li>Feel doors before opening - if hot, find another exit</li>
+                            <li>Stay low to avoid smoke inhalation</li>
+                            <li>Once out, stay out - never re-enter a burning building</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <a href="javascript:void(0)" class="btn btn-primary w-100 mb-3" data-action="download" data-filename="ENFES-Escape-Plan-Template.txt" data-content="ENFES HOME ESCAPE PLAN TEMPLATE%0A%0A1. Draw a floor plan of your home showing all possible exits from each room%0A2. Mark two ways out of each room if possible%0A3. Designate a meeting spot outside the home where everyone should gather%0A4. Ensure everyone knows how to call emergency services (997)%0A5. Practice your escape plan at least twice a year, both day and night%0A%0AEswatini National Fire and Emergency Services (ENFES)">Download Escape Plan Template</a>
+                      <a href="javascript:void(0)" class="btn btn-outline-primary w-100" data-action="modal" data-title="Schedule a Home Safety Visit" data-body="&lt;p&gt;Request a free home safety inspection from an ENFES prevention officer. We&#39;ll check smoke alarms, escape routes and general fire risks in your home.&lt;/p&gt;&lt;p&gt;Use the &lt;strong&gt;General Inquiry&lt;/strong&gt; form in the Contact section, or call +268 2404 3333, to book a visit.&lt;/p&gt;">Schedule a Home Safety Visit</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                  Electrical Safety Guidelines
+                </button>
+              </h2>
+              <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#safetyAccordion">
+                <div class="accordion-body safety-content">
+                  <p>Electrical fires are common but preventable. Follow these guidelines to reduce risk:</p>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <h5>Wiring & Outlets</h5>
+                      <ul>
+                        <li>Replace damaged electrical cords immediately</li>
+                        <li>Avoid running cords under carpets or furniture</li>
+                        <li>Don't overload outlets or extension cords</li>
+                        <li>Use surge protectors for electronic equipment</li>
+                      </ul>
+                    </div>
+                    <div class="col-md-6">
+                      <h5>Appliances & Equipment</h5>
+                      <ul>
+                        <li>Unplug appliances when not in use</li>
+                        <li>Keep appliances away from water sources</li>
+                        <li>Have regular inspections by qualified electricians</li>
+                        <li>Use the correct wattage light bulbs for fixtures</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i> If you smell burning plastic, see sparks, or experience frequent circuit breaker trips, contact a qualified electrician immediately.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingFive">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                  Seasonal Fire Safety
+                </button>
+              </h2>
+              <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#safetyAccordion">
+                <div class="accordion-body safety-content">
+                  <div class="row">
+                    <div class="col-md-6 mb-4">
+                      <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                          Dry Season (May-October)
+                        </div>
+                        <div class="card-body">
+                          <ul>
+                            <li>Clear dry vegetation around homes</li>
+                            <li>Dispose of cigarettes properly</li>
+                            <li>Follow all burn bans and restrictions</li>
+                            <li>Keep BBQ grills away from structures</li>
+                            <li>Maintain a water source nearby when cooking outdoors</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                      <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                          Wet Season (November-April)
+                        </div>
+                        <div class="card-body">
+                          <ul>
+                            <li>Keep portable heaters 1m from combustibles</li>
+                            <li>Never use stoves for heating purposes</li>
+                            <li>Have chimneys and heating systems inspected</li>
+                            <li>Use candles only on stable surfaces</li>
+                            <li>Never leave heat sources unattended</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-center mt-3">
+                    <a href="javascript:void(0)" class="btn btn-outline-primary" data-action="download" data-filename="ENFES-Seasonal-Safety-Guide.txt" data-content="ENFES SEASONAL FIRE SAFETY GUIDE%0A%0ADRY SEASON (May-October)%0A- Clear dry vegetation around homes%0A- Dispose of cigarettes properly%0A- Follow all burn bans and restrictions%0A- Keep BBQ grills away from structures%0A- Maintain a water source nearby when cooking outdoors%0A%0AWET SEASON (November-April)%0A- Keep portable heaters 1m from combustibles%0A- Never use stoves for heating purposes%0A- Have chimneys and heating systems inspected%0A- Use candles only on stable surfaces%0A- Never leave heat sources unattended%0A%0AEswatini National Fire and Emergency Services (ENFES)">Download Seasonal Safety Guide</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stations & Coverage -->
+  <section id="stations" class="stations-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Stations & Coverage</h2>
+      <div class="row">
+        <div class="col-md-4" data-aos="fade-right">
+          <div class="station-filter mb-4">
+            <h4 class="mb-3">Find Your Station</h4>
+            <div class="mb-3">
+              <label for="regionSelect" class="form-label">Select Region</label>
+              <select class="form-select" id="regionSelect">
+                <option value="all">All Regions</option>
+                <option value="hhohho">Hhohho</option>
+                <option value="manzini">Manzini</option>
+                <option value="shiselweni">Shiselweni</option>
+                <option value="lubombo">Lubombo</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Station Type</label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="fullTimeCheck" checked>
+                <label class="form-check-label" for="fullTimeCheck">
+                  Full-Time Stations
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="volunteerCheck" checked>
+                <label class="form-check-label" for="volunteerCheck">
+                  Volunteer Stations
+                </label>
+              </div>
+            </div>
+            <button class="btn btn-primary w-100">Apply Filters</button>
+          </div>
+          
+          <div class="station-info-card" data-station-id="1">
+            <h5>Mbabane Headquarters</h5>
+            <span class="badge mb-3">Hhohho Region</span>
+            <div class="station-detail">
+              <i class="fas fa-phone"></i> +268 2404 3333
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-map-marker-alt"></i> 15 Fire Road, Mbabane
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-clock"></i> 24 Hours
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-users"></i> 32 Firefighters
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-truck"></i> 5 Vehicles
+            </div>
+          </div>
+          
+          <div class="station-info-card" data-station-id="2">
+            <h5>Manzini Station</h5>
+            <span class="badge mb-3">Manzini Region</span>
+            <div class="station-detail">
+              <i class="fas fa-phone"></i> +268 2505 2222
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-map-marker-alt"></i> 7 Emergency Street, Manzini
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-clock"></i> 24 Hours
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-users"></i> 25 Firefighters
+            </div>
+            <div class="station-detail">
+              <i class="fas fa-truck"></i> 4 Vehicles
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8" data-aos="fade-left">
+          <div id="stations-map"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest News -->
+  <section id="news" class="news-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Latest News & Alerts</h2>
+      <div class="row" id="news-container">
+        <div class="col-md-4 mb-4" data-aos="fade-up">
+          <div class="news-card">
+            <div class="news-img" style="background-image: url('00-147.png');"></div>
+            <div class="news-info">
+              <span class="date">May 15, 2026</span>
+              <span class="category">Safety Alert</span>
+              <h5>Fire Risk Increases as Dry Season Begins</h5>
+              <p>ENFES warns citizens about elevated fire risks during the upcoming dry season and provides prevention tips.</p>
+              <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="Fire Risk Increases as Dry Season Begins" data-body="&lt;p class=&#39;text-muted small&#39;&gt;May 15, 2026 &middot; Safety Alert&lt;/p&gt;&lt;p&gt;As the dry season approaches, ENFES is urging households, farmers and businesses across Eswatini to take extra precautions. Dry vegetation, low humidity and strong winds combine to significantly raise the risk of both wildfires and structural fires.&lt;/p&gt;&lt;p&gt;Residents are reminded to clear dry brush from around buildings, avoid unauthorised outdoor burning, and keep an eye on regional burn-ban notices published on this site.&lt;/p&gt;">Read More</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="news-card">
+            <div class="news-img" style="background-image: url('maxresdefault (1).jpg');"></div>
+            <div class="news-info">
+              <span class="date">May 10, 2026</span>
+              <span class="category">Training</span>
+              <h5>30 New Firefighters Complete Advanced Training</h5>
+              <p>ENFES welcomes its newest class of fully-trained firefighters after six months of intensive training.</p>
+              <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="30 New Firefighters Complete Advanced Training" data-body="&lt;p class=&#39;text-muted small&#39;&gt;May 10, 2026 &middot; Training&lt;/p&gt;&lt;p&gt;ENFES proudly welcomes 30 newly qualified firefighters into active service following six months of intensive training in structural firefighting, emergency medical response, HAZMAT handling and physical conditioning.&lt;/p&gt;&lt;p&gt;The graduates will be deployed to stations across all four regions to strengthen 24/7 emergency response capacity.&lt;/p&gt;">Read More</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="news-card">
+            <div class="news-img" style="background-image: url('postQueueImg_1680689063.91.jpg');"></div>
+            <div class="news-info">
+              <span class="date">May 5, 2026</span>
+              <span class="category">Announcement</span>
+              <h5>New Fire Stations Opening in Rural Areas</h5>
+              <p>ENFES expands coverage with three new stations in previously underserved regions of Eswatini.</p>
+              <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="New Fire Stations Opening in Rural Areas" data-body="&lt;p class=&#39;text-muted small&#39;&gt;May 5, 2026 &middot; Announcement&lt;/p&gt;&lt;p&gt;Three new fire stations are opening in previously underserved rural areas, cutting average response times for surrounding communities by an estimated 40%.&lt;/p&gt;&lt;p&gt;Each new station will be staffed with full-time crews and equipped with a pumper truck and basic rescue tools, with volunteer support from local community members.&lt;/p&gt;">Read More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4" data-aos="fade-up">
+        <button id="load-more-news" class="btn btn-outline-primary">Load More News</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Careers Section -->
+  <section id="careers" class="careers-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Careers & Recruitment</h2>
+      <div class="row">
+        <div class="col-md-6" data-aos="fade-right">
+          <h3 class="mb-4">Current Vacancies</h3>
+          <div class="vacancy-card">
+            <h5>Firefighter - Entry Level</h5>
+            <span class="location">Multiple Stations</span>
+            <span class="deadline">Application Deadline: June 30, 2025</span>
+            <p>Join ENFES as an entry-level firefighter. No previous experience required, but candidates must pass physical fitness and aptitude tests.</p>
+            <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="Firefighter - Entry Level" data-body="&lt;p&gt;&lt;strong&gt;Location:&lt;/strong&gt; Multiple Stations&lt;br&gt;&lt;strong&gt;Deadline:&lt;/strong&gt; June 30, 2025&lt;/p&gt;&lt;p&gt;No previous experience required. Candidates must pass a physical fitness test, aptitude assessment and medical examination. Full training is provided at the ENFES academy.&lt;/p&gt;&lt;p&gt;Use the application form to apply, selecting &#39;Firefighter - Entry Level&#39; as your position of interest.&lt;/p&gt;">View Details</a>
+            <a href="javascript:void(0)" class="btn btn-sm btn-gold" data-action="download" data-filename="ENFES-Firefighter-Entry-Level-Vacancy.txt" data-content="ENFES VACANCY%0A%0APosition: Firefighter - Entry Level%0ALocation: Multiple Stations%0AApplication Deadline: June 30, 2025%0A%0ANo previous experience required, but candidates must pass physical fitness and aptitude tests, plus a medical examination. Full training provided.%0A%0AApply online via the ENFES website careers section.">Download PDF</a>
+          </div>
+          <div class="vacancy-card">
+            <h5>Fire Safety Inspector</h5>
+            <span class="location">Mbabane Headquarters</span>
+            <span class="deadline">Application Deadline: June 15, 2025</span>
+            <p>Experienced fire safety professional needed for building inspections, code enforcement, and public education activities.</p>
+            <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="Fire Safety Inspector" data-body="&lt;p&gt;&lt;strong&gt;Location:&lt;/strong&gt; Mbabane Headquarters&lt;br&gt;&lt;strong&gt;Deadline:&lt;/strong&gt; June 15, 2025&lt;/p&gt;&lt;p&gt;We are seeking an experienced fire safety professional for building inspections, code enforcement, and public education activities. Relevant certification and prior inspection experience preferred.&lt;/p&gt;">View Details</a>
+            <a href="javascript:void(0)" class="btn btn-sm btn-gold" data-action="download" data-filename="ENFES-Fire-Safety-Inspector-Vacancy.txt" data-content="ENFES VACANCY%0A%0APosition: Fire Safety Inspector%0ALocation: Mbabane Headquarters%0AApplication Deadline: June 15, 2025%0A%0AExperienced fire safety professional needed for building inspections, code enforcement, and public education activities.%0A%0AApply online via the ENFES website careers section.">Download PDF</a>
+          </div>
+          <div class="vacancy-card">
+            <h5>Emergency Dispatcher</h5>
+            <span class="location">Central Communication Center</span>
+            <span class="deadline">Application Deadline: July 15, 2025</span>
+            <p>Seeking qualified emergency dispatchers to handle emergency calls, coordinate responses, and maintain communication systems.</p>
+            <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="Emergency Dispatcher" data-body="&lt;p&gt;&lt;strong&gt;Location:&lt;/strong&gt; Central Communication Center&lt;br&gt;&lt;strong&gt;Deadline:&lt;/strong&gt; July 15, 2025&lt;/p&gt;&lt;p&gt;Seeking qualified emergency dispatchers to handle emergency calls, coordinate responses, and maintain communication systems. Strong communication skills and the ability to stay calm under pressure are essential.&lt;/p&gt;">View Details</a>
+            <a href="javascript:void(0)" class="btn btn-sm btn-gold" data-action="download" data-filename="ENFES-Emergency-Dispatcher-Vacancy.txt" data-content="ENFES VACANCY%0A%0APosition: Emergency Dispatcher%0ALocation: Central Communication Center%0AApplication Deadline: July 15, 2025%0A%0ASeeking qualified emergency dispatchers to handle emergency calls, coordinate responses, and maintain communication systems.%0A%0AApply online via the ENFES website careers section.">Download PDF</a>
+          </div>
+          <div class="mt-4">
+            <h4 class="mb-3">Firefighter Requirements</h4>
+            <ul>
+              <li>Eswatini citizenship</li>
+              <li>High school diploma or equivalent</li>
+              <li>Valid driver's license</li>
+              <li>Pass physical fitness test</li>
+              <li>Pass medical examination</li>
+              <li>Clean criminal record</li>
+              <li>Basic computer literacy</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6" data-aos="fade-left">
+          <div class="application-form">
+            <h3 class="mb-4">Online Application</h3>
+            <form id="career-application-form">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="firstName" class="form-label">First Name</label>
+                  <input type="text" class="form-control" id="firstName" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="lastName" class="form-label">Last Name</label>
+                  <input type="text" class="form-control" id="lastName" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" required>
+              </div>
+              <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" required>
+              </div>
+              <div class="mb-3">
+                <label for="position" class="form-label">Position of Interest</label>
+                <select class="form-select" id="position" required>
+                  <option value="" selected disabled>Select Position</option>
+                  <option value="firefighter">Firefighter - Entry Level</option>
+                  <option value="inspector">Fire Safety Inspector</option>
+                  <option value="dispatcher">Emergency Dispatcher</option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label class="form-label">Upload Resume/CV</label>
+                <div class="form-file-upload">
+                  <input type="file" id="resume" accept=".pdf,.doc,.docx">
+                  <div class="text-center">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p>Drag and drop or click to upload</p>
+                    <small>PDF, DOC or DOCX (Max 5MB)</small>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-4">
+                <label for="message" class="form-label">Cover Letter / Additional Information</label>
+                <textarea class="form-control" id="message" rows="4"></textarea>
+              </div>
+              <div class="mb-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="agreeTerms" required>
+                  <label class="form-check-label" for="agreeTerms">
+                    I agree to the <a href="javascript:void(0)" data-action="modal" data-title="Terms &amp; Conditions" data-body="<p>By submitting this application you confirm that all information provided is accurate to the best of your knowledge.</p><p>ENFES will process your personal data solely for recruitment purposes, in line with the Eswatini Data Protection Act, and will not share it with third parties without your consent.</p><p>Submitted documents are retained for the duration of the recruitment process and securely discarded afterward unless you are offered a position.</p>">terms and conditions</a> and consent to the processing of my personal data.
+                  </label>
+                </div>
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Submit Application</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community Section -->
+  <section id="community" class="community-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Community Engagement</h2>
+      <div class="row">
+        <div class="col-lg-6" data-aos="fade-right">
+          <h3 class="mb-4">Testimonials</h3>
+          <div class="testimonial-card">
+            <i class="fas fa-quote-right quote-icon"></i>
+            <p class="quote">The ENFES team responded within minutes when our office building caught fire. Their professionalism and quick action saved lives and minimized damage. We are forever grateful for their service.</p>
+            <h5 class="author">James Shabangu</h5>
+            <span class="author-title">Business Owner, Manzini</span>
+          </div>
+          <div class="testimonial-card">
+            <i class="fas fa-quote-right quote-icon"></i>
+            <p class="quote">The fire safety workshop conducted by ENFES at our school was engaging and informative. Our students learned valuable life-saving skills, and the instructors were wonderful with the children.</p>
+            <h5 class="author">Mrs. Nkambule</h5>
+            <span class="author-title">Principal, Lobamba Primary School</span>
+          </div>
+          <div class="testimonial-card">
+            <i class="fas fa-quote-right quote-icon"></i>
+            <p class="quote">After the devastating floods, ENFES teams worked tirelessly to rescue stranded families and provide emergency assistance. Their dedication to our community goes far beyond fighting fires.</p>
+            <h5 class="author">Pastor Thomas Zwane</h5>
+            <span class="author-title">Community Leader, Shiselweni Region</span>
+          </div>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left">
+          <h3 class="mb-4">Community Programs</h3>
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <div class="community-action">
+                <div class="community-img" style="background-image: url('00-64.png');"></div>
+                <div class="community-info">
+                  <h4>School Visit Program</h4>
+                  <p>Schedule ENFES firefighters to visit your school for education and demonstrations.</p>
+                  <a href="#contact" class="btn btn-outline-primary" data-action="toast" data-toast="Great! Use the General Inquiry form below to request your school visit.">Request a Visit</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-4">
+              <div class="community-action">
+                <div class="community-img" style="background-image: url('fire drill.jpg');"></div>
+                <div class="community-info">
+                  <h4>Community Fire Drills</h4>
+                  <p>Organize evacuation and emergency response practice for your neighborhood.</p>
+                  <a href="#contact" class="btn btn-outline-primary" data-action="toast" data-toast="Use the General Inquiry form below to schedule a community fire drill.">Schedule a Drill</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-4">
+              <div class="community-action">
+                <div class="community-img" style="background-image: url('00-153.png');"></div>
+                <div class="community-info">
+                  <h4>Volunteer Program</h4>
+                  <p>Join our volunteer firefighter program and serve your community.</p>
+                  <a href="javascript:void(0)" class="btn btn-outline-primary" data-action="modal" data-title="Volunteer Program" data-body="<p>ENFES relies on trained community volunteers to support full-time crews, especially in rural areas. Volunteers receive free basic firefighting and first-aid training.</p><p>Requirements: Eswatini citizenship, age 18+, reasonable physical fitness, and completion of a short orientation course.</p><p>Contact your nearest station or use the Contact section below to register your interest.</p>">Learn More</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-4">
+              <div class="community-action">
+                <div class="community-img" style="background-image: url('87u.jpg');"></div>
+                <div class="community-info">
+                  <h4>Safety Workshops</h4>
+                  <p>Attend or request workshops on fire prevention and emergency preparedness.</p>
+                  <a href="javascript:void(0)" class="btn btn-outline-primary" data-action="modal" data-title="Upcoming Safety Workshops" data-body="<ul><li>Home Fire Safety Basics &mdash; Mbabane, every 1st Saturday</li><li>Workplace Fire Warden Training &mdash; Manzini, every 3rd Thursday</li><li>Electrical Safety for Small Businesses &mdash; Nhlangano, quarterly</li></ul><p>To request a custom workshop for your organisation, get in touch via the Contact section.</p>">View Schedule</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resources Section -->
+  <section id="resources" class="resources-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Resources & Downloads</h2>
+      <div class="row mb-4">
+        <div class="col-md-6" data-aos="fade-right">
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" id="resourceSearch" placeholder="Search resources..." aria-label="Search resources">
+            <button class="btn btn-primary" type="button" id="resourceSearchBtn">Search</button>
+          </div>
+        </div>
+        <div class="col-md-6" data-aos="fade-left">
+          <div class="d-flex justify-content-end">
+            <div class="btn-group" id="resourceFilterGroup">
+              <button type="button" class="btn btn-outline-secondary active" data-filter="all">All</button>
+              <button type="button" class="btn btn-outline-secondary" data-filter="posters">Posters</button>
+              <button type="button" class="btn btn-outline-secondary" data-filter="guides">Guides</button>
+              <button type="button" class="btn btn-outline-secondary" data-filter="forms">Forms</button>
+              <button type="button" class="btn btn-outline-secondary" data-filter="reports">Reports</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" data-aos="fade-up" id="resource-container">
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="guides">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #e63946;">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="resource-info">
+              <h5>Home Fire Safety Guide</h5>
+              <p>Comprehensive guide for fire prevention and safety in residential settings.</p>
+              <div class="resource-meta">
+                <span class="type">PDF</span>
+                <span class="downloads"><i class="fas fa-download"></i> 1,245</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Home-Fire-Safety-Guide.txt" data-content="ENFES HOME FIRE SAFETY GUIDE%0A%0AA comprehensive guide for fire prevention and safety in residential settings. Covers smoke alarms, escape planning, cooking and heating safety, and electrical hazards.%0A%0AEswatini National Fire and Emergency Services (ENFES)">Download</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="posters">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #1d3557;">
+              <i class="fas fa-file-image"></i>
+            </div>
+            <div class="resource-info">
+              <h5>Fire Safety Posters (Set)</h5>
+              <p>Printable posters for schools, offices, and public spaces.</p>
+              <div class="resource-meta">
+                <span class="type">ZIP</span>
+                <span class="downloads"><i class="fas fa-download"></i> 876</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Fire-Safety-Posters-Info.txt" data-content="ENFES FIRE SAFETY POSTER SET%0A%0APrintable posters for schools, offices and public spaces covering PASS extinguisher use, escape planning and emergency numbers (997 / 977).%0A%0AFor high-resolution print files, contact info@enfes.gov.sz.">Download</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="forms">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #457b9d;">
+              <i class="fas fa-file-word"></i>
+            </div>
+            <div class="resource-info">
+              <h5>Inspection Request Form</h5>
+              <p>Official form to request fire safety inspections for your property.</p>
+              <div class="resource-meta">
+                <span class="type">DOC</span>
+                <span class="downloads"><i class="fas fa-download"></i> 643</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Inspection-Request-Form.txt" data-content="ENFES FIRE SAFETY INSPECTION REQUEST%0A%0AProperty Address: ____________________%0AContact Name: ____________________%0APhone: ____________________%0AEmail: ____________________%0APreferred Date: ____________________%0A%0AReturn this form to admin@enfes.gov.sz or your nearest station.">Download</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="forms">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #1d3557;">
+              <i class="fas fa-file-excel"></i>
+            </div>
+            <div class="resource-info">
+              <h5>Emergency Contact Template</h5>
+              <p>Editable template for creating an emergency contact list.</p>
+              <div class="resource-meta">
+                <span class="type">XLS</span>
+                <span class="downloads"><i class="fas fa-download"></i> 532</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Emergency-Contact-Template.txt" data-content="ENFES EMERGENCY CONTACT LIST TEMPLATE%0A%0AFire: 997%0AAmbulance: 977%0AENFES Admin: +268 2404 3333%0AFamily/Neighbour Contact: ____________________%0ADoctor: ____________________%0AUtility Company: ____________________">Download</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="reports">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #e63946;">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="resource-info">
+              <h5>ENFES Annual Report 2024</h5>
+              <p>Official annual report detailing operations, statistics, and achievements.</p>
+              <div class="resource-meta">
+                <span class="type">PDF</span>
+                <span class="downloads"><i class="fas fa-download"></i> 489</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Annual-Report-2024.txt" data-content="ENFES ANNUAL REPORT 2024 (SUMMARY)%0A%0A- 4,820 emergency calls answered%0A- 18 stations operating nationwide%0A- 312 trained personnel%0A- Average response time: 7 minutes%0A- 15%25 reduction in residential fire incidents year over year%0A%0AFull report available on request from admin@enfes.gov.sz.">Download</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="guides">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #e63946;">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="resource-info">
+              <h5>Business Emergency Plan Guide</h5>
+              <p>Step-by-step guide for developing emergency plans for businesses.</p>
+              <div class="resource-meta">
+                <span class="type">PDF</span>
+                <span class="downloads"><i class="fas fa-download"></i> 421</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Business-Emergency-Plan-Guide.txt" data-content="ENFES BUSINESS EMERGENCY PLAN GUIDE%0A%0A1. Identify potential hazards specific to your business%0A2. Assign emergency roles to staff%0A3. Map evacuation routes and assembly points%0A4. Establish a communication plan%0A5. Schedule regular drills and reviews%0A%0AFor an on-site consultation, contact ENFES prevention services.">Download</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="guides">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #457b9d;">
+              <i class="fas fa-file-powerpoint"></i>
+            </div>
+            <div class="resource-info">
+              <h5>Fire Safety Training Slides</h5>
+              <p>Educational presentation slides for workplace fire safety training.</p>
+              <div class="resource-meta">
+                <span class="type">PPT</span>
+                <span class="downloads"><i class="fas fa-download"></i> 378</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Fire-Safety-Training-Outline.txt" data-content="ENFES WORKPLACE FIRE SAFETY TRAINING - OUTLINE%0A%0A1. Understanding fire behaviour and classes%0A2. Using a fire extinguisher (PASS method)%0A3. Evacuation procedures and assembly points%0A4. Roles of fire wardens%0A5. Post-incident reporting%0A%0ARequest a full in-person session via the Contact section.">Download</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="guides">
+          <div class="resource-card">
+            <div class="resource-thumbnail" style="background-color: #1d3557;">
+              <i class="fas fa-file-video"></i>
+            </div>
+            <div class="resource-info">
+              <h5>Fire Extinguisher Demo Video</h5>
+              <p>Instructional video on proper fire extinguisher usage techniques.</p>
+              <div class="resource-meta">
+                <span class="type">MP4</span>
+                <span class="downloads"><i class="fas fa-download"></i> 315</span>
+              </div>
+              <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="modal" data-title="Fire Extinguisher Demo Video" data-body="<p>This instructional video demonstrates the PASS technique for operating a fire extinguisher safely.</p><p><strong>P</strong>ull the pin &middot; <strong>A</strong>im low &middot; <strong>S</strong>queeze the handle &middot; <strong>S</strong>weep side to side.</p><p>See the full written guide in the Fire Safety Information section above.</p>">Watch Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4" data-aos="fade-up">
+        <button class="btn btn-outline-primary" id="load-more-resources">Load More Resources</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="contact-section">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Contact Us</h2>
+      <div class="row">
+        <div class="col-lg-8" data-aos="fade-right">
+          <div class="contact-form">
+            <ul class="nav nav-tabs mb-4" id="contactTab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="emergency-tab" data-bs-toggle="tab" data-bs-target="#emergency-tab-pane" type="button" role="tab" aria-controls="emergency-tab-pane" aria-selected="true">Emergency</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-tab-pane" type="button" role="tab" aria-controls="general-tab-pane" aria-selected="false">General Inquiry</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="feedback-tab" data-bs-toggle="tab" data-bs-target="#feedback-tab-pane" type="button" role="tab" aria-controls="feedback-tab-pane" aria-selected="false">Feedback</button>
+              </li>
+            </ul>
+            <div class="tab-content" id="contactTabContent">
+              <div class="tab-pane fade show active" id="emergency-tab-pane" role="tabpanel" aria-labelledby="emergency-tab" tabindex="0">
+                <div class="alert alert-danger">
+                  <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i> Emergency Numbers</h4>
+                  <p>For emergencies requiring immediate response, please call:</p>
+                  <ul class="mb-0">
+                    <li><strong>Fire Emergency:</strong> 997</li>
+                    <li><strong>Ambulance:</strong> 977</li>
+                    <li><strong>General Emergency:</strong> +268 2404 3333</li>
+                  </ul>
+                </div>
+                <p class="mt-3">For non-life-threatening fire hazards that require attention:</p>
+                <form id="emergency-report-form">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="name" class="form-label">Full Name</label>
+                      <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="phone-emergency" class="form-label">Phone Number</label>
+                      <input type="tel" class="form-control" id="phone-emergency" required>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="location" class="form-label">Location of Concern</label>
+                    <input type="text" class="form-control" id="location" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="hazard-type" class="form-label">Type of Hazard</label>
+                    <select class="form-select" id="hazard-type" required>
+                      <option value="" selected disabled>Select Hazard Type</option>
+                      <option value="smoke">Smoke or Odor</option>
+                      <option value="electrical">Electrical Hazard</option>
+                      <option value="chemical">Chemical Spill</option>
+                      <option value="water">Water Leak</option>
+                      <option value="structural">Structural Issue</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="mb-4">
+                    <label for="hazard-description" class="form-label">Detailed Description</label>
+                    <textarea class="form-control" id="hazard-description" rows="4" required></textarea>
+                  </div>
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                  </div>
+                </form>
+              </div>
+              <div class="tab-pane fade" id="general-tab-pane" role="tabpanel" aria-labelledby="general-tab" tabindex="0">
+                <form id="general-inquiry-form">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="inquiry-name" class="form-label">Full Name</label>
+                      <input type="text" class="form-control" id="inquiry-name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="inquiry-email" class="form-label">Email Address</label>
+                      <input type="email" class="form-control" id="inquiry-email" required>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="inquiry-phone" class="form-label">Phone Number</label>
+                      <input type="tel" class="form-control" id="inquiry-phone">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="inquiry-type" class="form-label">Inquiry Type</label>
+                      <select class="form-select" id="inquiry-type" required>
+                        <option value="" selected disabled>Select Inquiry Type</option>
+                        <option value="services">Services Information</option>
+                        <option value="inspection">Fire Inspection Request</option>
+                        <option value="training">Training Programs</option>
+                        <option value="volunteer">Volunteer Opportunities</option>
+                        <option value="careers">Careers & Recruitment</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mb-4">
+                    <label for="inquiry-message" class="form-label">Message</label>
+                    <textarea class="form-control" id="inquiry-message" rows="4" required></textarea>
+                  </div>
+                  <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="privacyCheck" required>
+                    <label class="form-check-label" for="privacyCheck">I agree to the privacy policy and consent to being contacted regarding this inquiry.</label>
+                  </div>
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Submit Inquiry</button>
+                  </div>
+                </form>
+              </div>
+              <div class="tab-pane fade" id="feedback-tab-pane" role="tabpanel" aria-labelledby="feedback-tab" tabindex="0">
+                <p class="mb-3">We value your feedback to help improve our services. Please share your experiences or suggestions:</p>
+                <form id="feedback-form">
+                  <div class="mb-3">
+                    <label for="feedback-type" class="form-label">Feedback Type</label>
+                    <select class="form-select" id="feedback-type" required>
+                      <option value="" selected disabled>Select Feedback Type</option>
+                      <option value="compliment">Compliment</option>
+                      <option value="complaint">Complaint</option>
+                      <option value="suggestion">Suggestion</option>
+                      <option value="question">Question</option>
+                    </select>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="feedback-name" class="form-label">Full Name</label>
+                      <input type="text" class="form-control" id="feedback-name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="feedback-email" class="form-label">Email Address</label>
+                      <input type="email" class="form-control" id="feedback-email" required>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="feedback-incident" class="form-label">Incident Date (if applicable)</label>
+                    <input type="date" class="form-control" id="feedback-incident">
+                  </div>
+                  <div class="mb-3">
+                    <label for="feedback-location" class="form-label">Location (if applicable)</label>
+                    <input type="text" class="form-control" id="feedback-location">
+                  </div>
+                  <div class="mb-4">
+                    <label for="feedback-message" class="form-label">Your Feedback</label>
+                    <textarea class="form-control" id="feedback-message" rows="4" required></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="contact-permission">
+                      <label class="form-check-label" for="contact-permission">
+                        I would like to be contacted regarding my feedback
+                      </label>
+                    </div>
+                  </div>
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4" data-aos="fade-left">
+          <div class="contact-info">
+            <h4>Contact Information</h4>
+            <div class="contact-item">
+              <div class="contact-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="contact-text">
+                <h6>Headquarters</h6>
+                <p>15 Fire Road, Mbabane<br>Eswatini, H100</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">
+                <i class="fas fa-phone-alt"></i>
+              </div>
+              <div class="contact-text">
+                <h6>Phone Numbers</h6>
+                <p>Emergency: 997<br>Admin: +268 2404 3333<br>Fax: +268 2404 3334</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="contact-text">
+                <h6>Email</h6>
+                <p>info@enfes.gov.sz<br>admin@enfes.gov.sz</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="contact-text">
+                <h6>Office Hours</h6>
+                <p>Emergency Services: 24/7<br>Admin Office: Mon-Fri, 8am-5pm</p>
+              </div>
+            </div>
+            <div class="social-links mt-4">
+              <a href="javascript:void(0)" aria-label="Facebook" data-action="toast" data-toast="ENFES is not yet on Facebook — check back soon."><i class="fab fa-facebook-f"></i></a>
+              <a href="javascript:void(0)" aria-label="Twitter / X" data-action="toast" data-toast="ENFES is not yet on X (Twitter) — check back soon."><i class="fab fa-twitter"></i></a>
+              <a href="javascript:void(0)" aria-label="Instagram" data-action="toast" data-toast="ENFES is not yet on Instagram — check back soon."><i class="fab fa-instagram"></i></a>
+              <a href="javascript:void(0)" aria-label="YouTube" data-action="toast" data-toast="ENFES is not yet on YouTube — check back soon."><i class="fab fa-youtube"></i></a>
+            </div>
+
+            <!-- Headquarters Map -->
+            <div id="contact-map"></div>
+
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+          <div class="footer-logo">
+            <img src="1764334617672.jpg" alt="ENFES Logo">
+            <h5 class="text-white mt-3">Eswatini National Fire & Emergency Services</h5>
+          </div>
+          <p class="text-white-50">Dedicated to protecting lives, property, and the environment through professional emergency response and prevention services.</p>
+          <div class="social-links">
+            <a href="javascript:void(0)" aria-label="Facebook" data-action="toast" data-toast="ENFES is not yet on Facebook — check back soon."><i class="fab fa-facebook-f"></i></a>
+            <a href="javascript:void(0)" aria-label="Twitter / X" data-action="toast" data-toast="ENFES is not yet on X (Twitter) — check back soon."><i class="fab fa-twitter"></i></a>
+            <a href="javascript:void(0)" aria-label="Instagram" data-action="toast" data-toast="ENFES is not yet on Instagram — check back soon."><i class="fab fa-instagram"></i></a>
+            <a href="javascript:void(0)" aria-label="YouTube" data-action="toast" data-toast="ENFES is not yet on YouTube — check back soon."><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+          <h5>Quick Links</h5>
+          <ul class="footer-links">
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#services">Our Services</a></li>
+            <li><a href="#safety">Fire Safety</a></li>
+            <li><a href="#stations">Stations</a></li>
+            <li><a href="#news">News & Alerts</a></li>
+            <li><a href="#careers">Careers</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+          <h5>Resources</h5>
+          <ul class="footer-links">
+            <li><a href="#safety">Safety Guidelines</a></li>
+            <li><a href="#resources">Download Center</a></li>
+            <li><a href="#careers">Forms & Applications</a></li>
+            <li><a href="#news">Public Reports</a></li>
+            <li><a href="#safety">Fire Codes & Standards</a></li>
+            <li><a href="#safety">Emergency Preparedness</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+          <h5>Stay Updated</h5>
+          <p class="text-white-50 mb-3">Subscribe to receive safety tips, alerts, and news from ENFES.</p>
+          <form class="subscription-form" id="newsletter-form">
+            <div class="input-group mb-3">
+              <input type="email" class="form-control" id="newsletter-email" placeholder="Your email address" aria-label="Your email address" required>
+              <button class="btn btn-gold" type="submit">Subscribe</button>
+            </div>
+          </form>
+          <div class="government-badge">
+            <img src="00501060_35248db210ccb3a93f9d2bce21a57054_arc614x376_w1872_us1-removebg-preview.png" alt="Government of Eswatini">
+            <p class="mb-0 mt-2">An Agency of the<br>Government of Eswatini</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <div class="container">
+        <p class="mb-0">&copy; 2026 Eswatini National Fire and Emergency Services. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to Top Button -->
+  <div class="scroll-to-top">
+    <i class="fas fa-arrow-up"></i>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script id="app-script">
+    // ---- Preloader (kept independent of any CDN library so a blocked/slow
+    // script — AOS, Bootstrap, jQuery — can never leave a visitor stuck) ----
+    function hideEnfesPreloader() {
+      var pre = document.getElementById('preloader');
+      if (pre && !pre.classList.contains('loaded')) {
+        pre.classList.add('loaded');
+        document.body.classList.remove('no-scroll');
+      }
+    }
+    document.body.classList.add('no-scroll');
+    window.addEventListener('load', function() {
+      setTimeout(hideEnfesPreloader, 350);
+    });
+    // Hard safety net regardless of what else on the page succeeds or fails
+    setTimeout(hideEnfesPreloader, 2500);
+
+    // Initialize AOS animations (guarded: page must stay usable if this CDN
+    // script fails to load, e.g. blocked by an ad-blocker or offline)
+    try {
+      if (typeof AOS !== 'undefined') {
+        AOS.init({
+          duration: 800,
+          easing: 'ease-in-out',
+          once: true
+        });
+      } else {
+        document.querySelectorAll('[data-aos]').forEach(function(el) {
+          el.removeAttribute('data-aos');
+        });
+      }
+    } catch (err) { /* AOS unavailable — content already visible without it */ }
+
+    // ---- Hero embers ----
+    (function() {
+      var wrap = document.getElementById('heroEmbers');
+      if (!wrap) return;
+      var count = window.innerWidth < 768 ? 10 : 20;
+      for (var i = 0; i < count; i++) {
+        var e = document.createElement('span');
+        e.className = 'ember';
+        e.style.left = Math.random() * 100 + '%';
+        e.style.animationDuration = (5 + Math.random() * 6) + 's';
+        e.style.animationDelay = (Math.random() * 8) + 's';
+        e.style.opacity = 0;
+        wrap.appendChild(e);
+      }
+    })();
+
+    // ---- Toast helper (falls back gracefully if Bootstrap's JS didn't load) ----
+    function showEnfesToast(message) {
+      var wrap = document.getElementById('enfesToastWrap');
+      if (typeof bootstrap === 'undefined' || !wrap) {
+        console.info('ENFES:', message.replace(/<[^>]*>/g, ''));
+        return;
+      }
+      var toastEl = document.createElement('div');
+      toastEl.className = 'toast align-items-center text-white bg-dark border-0 mb-2';
+      toastEl.setAttribute('role', 'alert');
+      toastEl.innerHTML = '<div class="d-flex"><div class="toast-body"><i class="fas fa-fire text-danger me-2"></i>' + message + '</div>' +
+        '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>';
+      wrap.appendChild(toastEl);
+      var t = new bootstrap.Toast(toastEl, { delay: 4500 });
+      t.show();
+      toastEl.addEventListener('hidden.bs.toast', function() { toastEl.remove(); });
+    }
+
+    // ---- Generic info modal (falls back to a plain alert if Bootstrap's JS didn't load) ----
+    function showEnfesInfoModal(title, bodyHtml) {
+      var plainText = title + '\n\n' + bodyHtml.replace(/<[^>]*>/g, '');
+      if (typeof bootstrap === 'undefined') {
+        alert(plainText);
+        return;
+      }
+      var existing = document.getElementById('genericInfoModal');
+      if (existing) existing.remove();
+      var modalHTML = '<div class="modal fade" id="genericInfoModal" tabindex="-1" aria-hidden="true">' +
+        '<div class="modal-dialog modal-lg modal-dialog-centered">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header"><h5 class="modal-title">' + title + '</h5>' +
+        '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>' +
+        '<div class="modal-body">' + bodyHtml + '</div>' +
+        '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>' +
+        '<a href="#contact" class="btn btn-primary" data-bs-dismiss="modal">Contact Us</a></div>' +
+        '</div></div></div>';
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      try {
+        var modal = new bootstrap.Modal(document.getElementById('genericInfoModal'));
+        modal.show();
+      } catch (err) {
+        alert(plainText);
+      }
+    }
+
+    // ---- Generic text-file download ----
+    function downloadEnfesTextFile(filename, content) {
+      var decoded = decodeURIComponent(content);
+      var blob = new Blob([decoded], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      showEnfesToast('Downloading "' + filename + '"&hellip;');
+    }
+
+    // ---- Ripple effect on buttons ----
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.btn');
+      if (!btn) return;
+      var rect = btn.getBoundingClientRect();
+      var ripple = document.createElement('span');
+      var size = Math.max(rect.width, rect.height);
+      ripple.className = 'ripple';
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      btn.appendChild(ripple);
+      setTimeout(function() { ripple.remove(); }, 650);
+    });
+
+    // ---- data-action delegated handlers (modal / download / toast) ----
+    document.addEventListener('click', function(e) {
+      var el = e.target.closest('[data-action]');
+      if (!el) return;
+      var action = el.getAttribute('data-action');
+      if (action === 'modal') {
+        e.preventDefault();
+        showEnfesInfoModal(el.getAttribute('data-title') || 'More Information', el.getAttribute('data-body') || '');
+      } else if (action === 'download') {
+        e.preventDefault();
+        downloadEnfesTextFile(el.getAttribute('data-filename') || 'ENFES-resource.txt', el.getAttribute('data-content') || '');
+      } else if (action === 'toast') {
+        showEnfesToast(el.getAttribute('data-toast') || 'Thank you!');
+      }
+    });
+
+    // ---- Animated stat counters ----
+    (function() {
+      var counters = document.querySelectorAll('.stat-number');
+      if (!counters.length) return;
+      var animated = new WeakSet();
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting && !animated.has(entry.target)) {
+            animated.add(entry.target);
+            var el = entry.target;
+            var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+            var suffix = el.getAttribute('data-suffix') || '';
+            var duration = 1600;
+            var start = null;
+            function step(ts) {
+              if (!start) start = ts;
+              var progress = Math.min((ts - start) / duration, 1);
+              var eased = 1 - Math.pow(1 - progress, 3);
+              el.textContent = Math.floor(eased * target).toLocaleString() + suffix;
+              if (progress < 1) requestAnimationFrame(step);
+              else el.textContent = target.toLocaleString() + suffix;
+            }
+            requestAnimationFrame(step);
+          }
+        });
+      }, { threshold: 0.4 });
+      counters.forEach(function(c) { observer.observe(c); });
+    })();
+
+    // Navbar active state, smooth scrolling, forms, maps, resource filters —
+    // all guarded: if jQuery failed to load from its CDN, fall back to a
+    // minimal vanilla version so the page never becomes unusable.
+    if (typeof jQuery === 'undefined') {
+      var stt = document.querySelector('.scroll-to-top');
+      if (stt) {
+        window.addEventListener('scroll', function() {
+          stt.classList.toggle('active', window.scrollY > 300);
+        });
+        stt.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+      // Native CSS scroll-behavior + real hrefs still make in-page navigation work.
+    } else {
+    $(document).ready(function() {
+      // Navbar shrink/shadow on scroll
+      $(window).on('scroll', function() {
+        if ($(this).scrollTop() > 60) {
+          $('.navbar').addClass('scrolled');
+        } else {
+          $('.navbar').removeClass('scrolled');
+        }
+      }).scroll();
+
+      // Add smooth scrolling to all links (native scroll-behavior + JS fallback for older browsers)
+      $("a").on('click', function(event) {
+        if (this.hash !== "" && $(this.hash).length) {
+          event.preventDefault();
+          var navbarHeight = $('.navbar').outerHeight() + $('.accent-bar').outerHeight();
+          $('html, body').animate({
+            scrollTop: $(this.hash).offset().top - navbarHeight
+          }, 700);
+          // Close mobile menu after navigating
+          var navCollapse = document.getElementById('navbarNav');
+          if (navCollapse && navCollapse.classList.contains('show')) {
+            if (typeof bootstrap !== 'undefined') bootstrap.Collapse.getOrCreateInstance(navCollapse).hide();
+          }
+        }
+      });
+
+      // Add active class to nav items when scrolling
+      $(window).scroll(function() {
+        var scrollDistance = $(window).scrollTop();
+        $('section[id]').each(function(i) {
+          if ($(this).position().top <= scrollDistance + 150) {
+            $('.navbar-nav .nav-item.active').removeClass('active');
+            $('.navbar-nav .nav-item').eq(i).addClass('active');
+          }
+        });
+      }).scroll();
+
+      // Scroll to top button
+      $(window).scroll(function() {
+        if ($(this).scrollTop() > 300) {
+          $('.scroll-to-top').addClass('active');
+        } else {
+          $('.scroll-to-top').removeClass('active');
+        }
+      });
+
+      $('.scroll-to-top').click(function() {
+        $('html, body').animate({scrollTop: 0}, 800);
+        return false;
+      });
+
+      // Resource filter buttons
+      $('#resourceFilterGroup button').on('click', function() {
+        $('#resourceFilterGroup button').removeClass('active');
+        $(this).addClass('active');
+        var filter = $(this).data('filter');
+        $('.resource-col').each(function() {
+          var show = filter === 'all' || $(this).data('category') === filter;
+          $(this).toggle(show);
+        });
+      });
+
+      // Resource search
+      function runResourceSearch() {
+        var term = ($('#resourceSearch').val() || '').toLowerCase().trim();
+        $('#resourceFilterGroup button').removeClass('active');
+        $('#resourceFilterGroup button[data-filter="all"]').addClass('active');
+        $('.resource-col').each(function() {
+          var text = $(this).find('h5').text().toLowerCase() + ' ' + $(this).find('p').text().toLowerCase();
+          $(this).toggle(term === '' || text.indexOf(term) !== -1);
+        });
+      }
+      $('#resourceSearchBtn').on('click', runResourceSearch);
+      $('#resourceSearch').on('keyup', function(e) { if (e.key === 'Enter') runResourceSearch(); });
+
+      // Load more resources
+      $('#load-more-resources').on('click', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Loading...');
+        setTimeout(function() {
+          $('#resource-container').append(`
+            <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="reports" data-aos="fade-up">
+              <div class="resource-card">
+                <div class="resource-thumbnail" style="background-color: #e63946;"><i class="fas fa-file-pdf"></i></div>
+                <div class="resource-info">
+                  <h5>Quarterly Incident Report</h5>
+                  <p>Breakdown of incident types and response metrics for the latest quarter.</p>
+                  <div class="resource-meta"><span class="type">PDF</span><span class="downloads"><i class="fas fa-download"></i> 201</span></div>
+                  <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Quarterly-Incident-Report.txt" data-content="ENFES QUARTERLY INCIDENT REPORT (SUMMARY)%0A%0AStructural fires: 62%0AVehicle fires: 28%0AMedical assists: 340%0AHAZMAT responses: 9%0AAverage response time: 7 minutes">Download</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4 resource-col" data-category="posters" data-aos="fade-up">
+              <div class="resource-card">
+                <div class="resource-thumbnail" style="background-color: #1d3557;"><i class="fas fa-file-image"></i></div>
+                <div class="resource-info">
+                  <h5>Kitchen Fire Safety Poster</h5>
+                  <p>A4 printable poster on preventing and responding to kitchen fires.</p>
+                  <div class="resource-meta"><span class="type">PDF</span><span class="downloads"><i class="fas fa-download"></i> 167</span></div>
+                  <button class="btn btn-sm btn-outline-primary w-100 mt-3" data-action="download" data-filename="ENFES-Kitchen-Fire-Safety-Poster.txt" data-content="ENFES KITCHEN FIRE SAFETY%0A%0A- Never leave cooking unattended%0A- Keep flammable items away from the stove%0A- Smother grease fires with a lid, never water%0A- Know your extinguisher's location">Download</button>
+                </div>
+              </div>
+            </div>
+          `);
+          AOS.refreshHard();
+          $btn.text('All Resources Loaded').prop('disabled', true);
+        }, 900);
+      });
+      
+      // Initialize station map
+      if (typeof L !== 'undefined' && $('#stations-map').length > 0) {
+        var map = L.map('stations-map').setView([-26.5225, 31.4659], 8); // Eswatini coordinates
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Add station markers
+        var stationIcon = L.icon({
+          iconUrl: 'https://cdn.pixabay.com/photo/2017/08/06/22/55/icon-2597983_1280.png',
+          iconSize: [30, 30],
+          iconAnchor: [15, 30],
+          popupAnchor: [0, -30]
+        });
+        
+        // Sample station data
+        var stations = [
+          {
+            name: "Mbabane Headquarters",
+            coordinates: [-26.3054, 31.1367],
+            phone: "+268 2404 3333",
+            address: "15 Fire Road, Mbabane",
+            staff: "32 Firefighters",
+            vehicles: "5 Vehicles"
+          },
+          {
+            name: "Manzini Station",
+            coordinates: [-26.4959, 31.3845],
+            phone: "+268 2505 2222",
+            address: "7 Emergency Street, Manzini",
+            staff: "25 Firefighters",
+            vehicles: "4 Vehicles"
+          },
+          {
+            name: "Nhlangano Station",
+            coordinates: [-27.1128, 31.1983],
+            phone: "+268 2207 1111",
+            address: "10 Safety Road, Nhlangano",
+            staff: "18 Firefighters",
+            vehicles: "3 Vehicles"
+          },
+          {
+            name: "Siteki Station",
+            coordinates: [-26.4523, 31.9453],
+            phone: "+268 2343 4444",
+            address: "5 Rescue Drive, Siteki",
+            staff: "15 Firefighters",
+            vehicles: "3 Vehicles"
+          }
+        ];
+        
+        // Add markers to map
+        stations.forEach(function(station) {
+          L.marker(station.coordinates, {icon: stationIcon}).addTo(map)
+            .bindPopup("<strong>" + station.name + "</strong><br>" + 
+                      station.address + "<br>Phone: " + 
+                      station.phone + "<br>" + 
+                      station.staff + "<br>" + 
+                      station.vehicles);
+        });
+      }
+      
+      // Initialize contact map
+      if (typeof L !== 'undefined' && $('#contact-map').length > 0) {
+        var contactMap = L.map('contact-map').setView([-26.3054, 31.1367], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(contactMap);
+        
+        L.marker([-26.3054, 31.1367]).addTo(contactMap)
+          .bindPopup("<strong>ENFES Headquarters</strong><br>15 Fire Road, Mbabane<br>Eswatini, H100")
+          .openPopup();
+      }
+
+      // Initialize other interactive components
+      // Form validation for all forms
+      $('form').on('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $form = $(this);
+        const formEl = this;
+
+        // Native HTML5 validation with a shake animation for invalid fields
+        if (!formEl.checkValidity()) {
+          formEl.classList.add('was-validated');
+          $form.addClass('shake-invalid');
+          setTimeout(function() { $form.removeClass('shake-invalid'); }, 500);
+          return;
+        }
+
+        // Store form data in localStorage (for prototype)
+        const formId = $form.attr('id') || ('form-' + Date.now());
+        const formData = {};
+        $form.serializeArray().forEach(function(field) {
+          formData[field.name] = field.value;
+        });
+        try { localStorage.setItem(formId, JSON.stringify(formData)); } catch (err) { /* storage unavailable */ }
+
+        // Animated success state
+        $form.fadeOut(150, function() {
+          $form.html('<div class="text-center py-3 form-success-anim">' +
+            '<div class="success-check"><i class="fas fa-check"></i></div>' +
+            '<h4 class="alert-heading mt-3">Thank you!</h4>' +
+            '<p class="mb-0">Your submission has been received. This is a prototype version — in the full application this would be routed to the ENFES team for processing.</p>' +
+            '</div>').fadeIn(250);
+        });
+
+        if (formId === 'newsletter-form' || $form.hasClass('subscription-form')) {
+          showEnfesToast('You&#39;re subscribed to ENFES safety alerts!');
+        } else {
+          showEnfesToast('Submission received — thank you!');
+        }
+      });
+      
+      // Load more news button
+      $('#load-more-news').on('click', function() {
+        // Add skeleton loaders first
+        for(let i = 0; i < 3; i++) {
+          $('#news-container').append(`
+            <div class="col-md-4 mb-4">
+              <div class="news-card">
+                <div class="news-img news-skeleton" style="height: 200px;"></div>
+                <div class="news-info">
+                  <span class="date news-skeleton" style="height: 20px; width: 100px; display: block;"></span>
+                  <span class="category news-skeleton" style="height: 20px; width: 80px; display: inline-block;"></span>
+                  <h5 class="news-skeleton" style="height: 28px; margin-top: 10px;"></h5>
+                  <p class="news-skeleton" style="height: 60px;"></p>
+                  <span class="news-skeleton" style="height: 35px; width: 100px; display: inline-block;"></span>
+                </div>
+              </div>
+            </div>
+          `);
+        }
+        
+        // Simulate loading delay
+        setTimeout(function() {
+          // Remove skeleton loaders
+          $('.news-skeleton').parent().parent().parent().remove();
+          
+          // Add actual content
+          $('#news-container').append(`
+            <div class="col-md-4 mb-4" data-aos="fade-up">
+              <div class="news-card">
+                <div class="news-img" style="background-image: url('https://cdn.pixabay.com/photo/2018/03/20/14/00/sea-3243357_1280.jpg');"></div>
+                <div class="news-info">
+                  <span class="date">April 28, 2025</span>
+                  <span class="category">Community</span>
+                  <h5>Water Safety Campaign Launched for Summer</h5>
+                  <p>ENFES introduces new water safety initiative focusing on drowning prevention.</p>
+                  <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="Water Safety Campaign Launched for Summer" data-body="&lt;p class='text-muted small'&gt;April 28, 2025 &middot; Community&lt;/p&gt;&lt;p&gt;With the summer season bringing more river and dam activity, ENFES has launched a water safety campaign focused on drowning prevention, safe swimming practices, and rapid-response swift-water rescue readiness.&lt;/p&gt;">Read More</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up">
+              <div class="news-card">
+                <div class="news-img" style="background-image: url('https://cdn.pixabay.com/photo/2015/07/11/14/53/plumbing-840835_1280.jpg');"></div>
+                <div class="news-info">
+                  <span class="date">April 15, 2025</span>
+                  <span class="category">Advisory</span>
+                  <h5>Sprinkler System Maintenance Guidelines Updated</h5>
+                  <p>New standards for commercial building sprinkler systems issued by ENFES.</p>
+                  <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="Sprinkler System Maintenance Guidelines Updated" data-body="&lt;p class='text-muted small'&gt;April 15, 2025 &middot; Advisory&lt;/p&gt;&lt;p&gt;ENFES has issued updated maintenance and testing standards for commercial building sprinkler systems, aligned with current fire code requirements. Building owners are advised to schedule certified inspections before their next compliance deadline.&lt;/p&gt;">Read More</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up">
+              <div class="news-card">
+                <div class="news-img" style="background-image: url('https://cdn.pixabay.com/photo/2018/04/25/19/10/smoke-3349829_1280.jpg');"></div>
+                <div class="news-info">
+                  <span class="date">April 5, 2025</span>
+                  <span class="category">Report</span>
+                  <h5>Annual Fire Statistics Show Decrease in Home Fires</h5>
+                  <p>Prevention efforts yield positive results with 15% reduction in residential fire incidents.</p>
+                  <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary" data-action="modal" data-title="Annual Fire Statistics Show Decrease in Home Fires" data-body="&lt;p class='text-muted small'&gt;April 5, 2025 &middot; Report&lt;/p&gt;&lt;p&gt;ENFES&#39; latest annual report shows a 15% reduction in residential fire incidents nationwide, attributed to expanded public education campaigns, smoke-alarm distribution drives, and faster response times.&lt;/p&gt;">Read More</a>
+                </div>
+              </div>
+            </div>
+          `);
+          
+          // Change button text
+          $('#load-more-news').text('All News Loaded');
+          $('#load-more-news').attr('disabled', true);
+        }, 1500);
+      });
+
+      // Create service modals dynamically (for other services beyond the first one)
+      for (let i = 2; i <= 8; i++) {
+        const modalId = `serviceModal${i}`;
+        let modalTitle, modalContent;
+        
+        switch (i) {
+          case 2:
+            modalTitle = "Emergency Medical Rescue";
+            modalContent = `
+              <div class="modal-section">
+                <h5>Overview</h5>
+                <p>Our emergency medical teams provide rapid response and care for medical emergencies. All personnel are trained in basic life support, with many having advanced life support qualifications to deliver critical care at the scene.</p>
+              </div>
+              <div class="modal-section">
+                <h5>When to Contact</h5>
+                <ul>
+                  <li>Life-threatening medical emergencies</li>
+                  <li>Serious injuries requiring immediate treatment</li>
+                  <li>Medical emergencies in hard-to-reach locations</li>
+                  <li>Multi-casualty incidents</li>
+                </ul>
+              </div>
+              <div class="modal-section">
+                <h5>Our Response</h5>
+                <ol>
+                  <li>Emergency call received and triaged</li>
+                  <li>Nearest appropriate resources dispatched</li>
+                  <li>On-scene assessment and treatment</li>
+                  <li>Patient stabilization</li>
+                  <li>Transport to medical facility if needed</li>
+                  <li>Handover to hospital staff</li>
+                </ol>
+              </div>
+              <div class="modal-section">
+                <h5>Equipment and Expertise</h5>
+                <p>Our ambulances are equipped with modern life-saving equipment including defibrillators, advanced airway management tools, and medications. Our personnel undergo continuous medical training to maintain and enhance their skills.</p>
+              </div>
+            `;
+            break;
+          case 3:
+            modalTitle = "HAZMAT Response";
+            modalContent = `
+              <div class="modal-section">
+                <h5>Overview</h5>
+                <p>Our Hazardous Materials (HAZMAT) teams respond to incidents involving dangerous substances, including chemical spills, gas leaks, and radiation concerns. We aim to contain threats, minimize environmental impact, and protect the public.</p>
+              </div>
+              <div class="modal-section">
+                <h5>When to Contact</h5>
+                <ul>
+                  <li>Chemical spills or leaks</li>
+                  <li>Unknown substance discoveries</li>
+                  <li>Fuel or oil spills</li>
+                  <li>Gas leaks</li>
+                  <li>Suspicious packages with potential chemical/biological threats</li>
+                </ul>
+              </div>
+              <div class="modal-section">
+                <h5>Our Response</h5>
+                <ol>
+                  <li>Specialized HAZMAT team deployment</li>
+                  <li>Establishment of safety zones</li>
+                  <li>Substance identification</li>
+                  <li>Risk assessment and action planning</li>
+                  <li>Containment and neutralization</li>
+                  <li>Decontamination procedures</li>
+                  <li>Scene remediation coordination</li>
+                </ol>
+              </div>
+              <div class="modal-section">
+                <h5>Equipment and Expertise</h5>
+                <p>Our HAZMAT specialists use protective suits, detection equipment, and specialized tools for containment and neutralization. Team members receive advanced training in chemical identification, risk assessment, and decontamination procedures.</p>
+              </div>
+            `;
+            break;
+          case 4:
+            modalTitle = "Road Accident Rescue";
+            modalContent = `
+              <div class="modal-section">
+                <h5>Overview</h5>
+                <p>Our specialized teams respond to vehicle accidents where occupants are trapped or injured. Using hydraulic cutting and spreading equipment, we safely extract victims while providing medical care in coordination with ambulance services.</p>
+              </div>
+              <div class="modal-section">
+                <h5>When to Contact</h5>
+                <ul>
+                  <li>Vehicle accidents with trapped occupants</li>
+                  <li>Vehicle accidents with serious injuries</li>
+                  <li>Vehicle fires</li>
+                  <li>Accidents involving hazardous materials transport</li>
+                </ul>
+              </div>
+              <div class="modal-section">
+                <h5>Our Response</h5>
+                <ol>
+                  <li>Scene safety and traffic management</li>
+                  <li>Vehicle stabilization</li>
+                  <li>Medical assessment of victims</li>
+                  <li>Extrication planning and execution</li>
+                  <li>Specialized cutting/spreading operations</li>
+                  <li>Coordination with medical teams</li>
+                  <li>Safe extraction of victims</li>
+                </ol>
+              </div>
+              <div class="modal-section">
+                <h5>Equipment and Expertise</h5>
+                <p>Our rescue teams utilize hydraulic cutting tools, stabilization equipment, and advanced medical supplies. Personnel are trained in vehicle construction, extrication techniques, and trauma care to ensure safe and efficient rescues.</p>
+              </div>
+            `;
+            break;
+          case 5:
+            modalTitle = "Community Fire Safety Education";
+            modalContent = `
+              <div class="modal-section">
+                <h5>Overview</h5>
+                <p>Our prevention team offers comprehensive fire safety education programs for schools, businesses, and community groups. These programs aim to increase awareness, teach prevention strategies, and improve emergency preparedness.</p>
+              </div>
+              <div class="modal-section">
+                <h5>Available Programs</h5>
+                <ul>
+                  <li>School fire safety curriculum (age-appropriate)</li>
+                  <li>Workplace fire safety training</li>
+                  <li>Home safety assessments</li>
+                  <li>Community workshops and demonstrations</li>
+                  <li>Fire extinguisher training</li>
+                  <li>Evacuation planning assistance</li>
+                </ul>
+              </div>
+              <div class="modal-section">
+                <h5>How to Access</h5>
+                <ol>
+                  <li>Submit a request via our website or contact form</li>
+                  <li>Specify program type, audience, and preferred dates</li>
+                  <li>Our education team will contact you to arrange details</li>
+                  <li>Programs can be customized to your specific needs</li>
+                </ol>
+              </div>
+              <div class="modal-section">
+                <h5>Resources Available</h5>
+                <p>We provide educational materials, demonstration equipment, and trained instructors. Many programs are offered free of charge to schools and community groups as part of our commitment to public safety.</p>
+              </div>
+            `;
+            break;
+          case 6:
+            modalTitle = "Fire Inspections & Compliance";
+            modalContent = `
+              <div class="modal-section">
+                <h5>Overview</h5>
+                <p>Our fire safety inspection team enforces fire codes and standards to ensure buildings are safe for occupancy. We provide inspections, code compliance assistance, and fire safety system certification services.</p>
+              </div>
+              <div class="modal-section">
+                <h5>Inspection Types</h5>
+                <ul>
+                  <li>New construction plan reviews</li>
+                  <li>Pre-occupancy inspections</li>
+                  <li>Routine compliance inspections</li>
+                  <li>Complaint-based inspections</li>
+                  <li>Special event safety reviews</li>
+                  <li>Fire system testing and certification</li>
+                </ul>
+              </div>
+              <div class="modal-section">
+                <h5>Process</h5>
+                <ol>
+                  <li>Schedule inspection via our online portal or phone</li>
+                  <li>Prepare site according to provided checklist</li>
+                  <li>Inspector conducts on-site evaluation</li>
+                  <li>Receive detailed inspection report</li>
+                  <li>Address any identified issues</li>
+                  <li>Follow-up inspection if necessary</li>
+                  <li>Certificate of compliance issued when standards met</li>
+                </ol>
+              </div>
+              <div class="modal-section">
+                <h5>Compliance Assistance</h5>
+                <p>Our goal is to help businesses achieve compliance, not just issue citations. Our inspectors can provide guidance on cost-effective solutions to address safety concerns and meet regulatory requirements.</p>
+              </div>
+            `;
+            break;
+          case 7:
+            modalTitle = "Disaster Response Coordination";
+            modalContent = `
+              <div class="modal-section">
+                <h5>Overview</h5>
+                <p>ENFES serves as a key coordinating agency during large-scale disasters. We work with multiple government departments, NGOs, and community organizations to deliver a comprehensive emergency response.</p>
+              </div>
+              <div class="modal-section">
+                <h5>Disaster Types</h5>
+                <ul>
+                  <li>Floods and severe weather events</li>
+                  <li>Major fires and explosions</li>
+                  <li>Infrastructure failures</li>
+                  <li>Disease outbreaks (support role)</li>
+                  <li>Mass casualty incidents</li>
+                  <li>Search and rescue operations</li>
+                </ul>
+              </div>
+              <div class="modal-section">
+                <h5>Coordination Functions</h5>
+                <ol>
+                  <li>Emergency Operations Center activation</li>
+                  <li>Interagency communication and resource sharing</li>
+                  <li>Unified command implementation</li>
+                  <li>Public information coordination</li>
+                  <li>Resource allocation and deployment</li>
+                  <li>Volunteer management</li>
+                  <li>Recovery planning and transition</li>
+                </ol>
+              </div>
+              <div class="modal-section">
+                <h5>Community Resilience</h5>
+                <p>Beyond immediate response, we work to strengthen community preparedness and resilience. Our community emergency response team (CERT) training programs help create neighborhood-level response capabilities for times when professional services are overwhelmed.</p>
+              </div>
+            `;
+            break;
+          case 8:
+            modalTitle = "Special Operations";
+            modalContent = `
+              <div class="modal-section">
+                <h5>Overview</h5>
+                <p>Our Special Operations teams handle complex rescues and emergencies requiring specialized training and equipment. These elite units respond to situations beyond the scope of standard emergency response.</p>
+              </div>
+              <div class="modal-section">
+                <h5>Specialized Response Capabilities</h5>
+                <ul>
+                  <li>High-angle/rope rescue (cliffs, towers, construction sites)</li>
+                  <li>Swift water and flood rescue</li>
+                  <li>Confined space rescue</li>
+                  <li>Trench and structural collapse rescue</li>
+                  <li>Wilderness search and rescue</li>
+                  <li>Dive recovery operations</li>
+                </ul>
+              </div>
+              <div class="modal-section">
+                <h5>Team Deployment</h5>
+                <ol>
+                  <li>Specialized incident identification</li>
+                  <li>Team activation and equipment mobilization</li>
+                  <li>On-scene technical assessment</li>
+                  <li>Rescue plan development</li>
+                  <li>Safety systems implementation</li>
+                  <li>Rescue operations execution</li>
+                  <li>Medical care integration</li>
+                </ol>
+              </div>
+              <div class="modal-section">
+                <h5>Team Qualifications</h5>
+                <p>Special Operations team members undergo extensive training beyond standard firefighter certification. They maintain specialized credentials and participate in regular training exercises to maintain their skills for these high-risk, low-frequency events.</p>
+              </div>
+            `;
+            break;
+        }
+
+        // Create modal in the DOM
+        const modalHTML = `
+          <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="${modalId}Label">${modalTitle}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  ${modalContent}
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <a href="#contact" class="btn btn-primary" data-bs-dismiss="modal">Contact Us</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        $('body').append(modalHTML);
+      }
+    });
+    } // end jQuery-available branch
+  </script>
+</body>
+</html>
